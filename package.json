@@ -1,0 +1,23 @@
+{
+  "name": "insta-post-generator",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Autonomous Instagram quote-content SaaS (web + worker monorepo)",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --filter @insta/web dev",
+    "dev:worker": "pnpm --filter @insta/worker dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "pg": "^8.22.0",
+    "typescript": "^5.6.3"
+  }
+}
