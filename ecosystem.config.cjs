@@ -16,14 +16,18 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const sharedEnv = { ...process.env, NODE_ENV: "production" };
 
+// Off the default 3000 to avoid clashing with other apps on a shared box.
+// Override per-box via WEB_PORT in the root .env; nginx must proxy to the same.
+const webPort = process.env.WEB_PORT || "3100";
+
 module.exports = {
   apps: [
     {
       name: "insta-web",
       cwd: path.join(__dirname, "apps/web"),
       script: "node_modules/.bin/next",
-      args: "start -p 3000",
-      env: { ...sharedEnv, PORT: "3000" },
+      args: `start -p ${webPort}`,
+      env: { ...sharedEnv, PORT: webPort },
       instances: 1,
       autorestart: true,
       max_memory_restart: "512M",

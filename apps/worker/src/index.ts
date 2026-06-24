@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection } from "./redis.js";
-import { QUEUE_NAMES, heartbeatQueue } from "./queues.js";
+import { QUEUE_NAMES, QUEUE_PREFIX, heartbeatQueue } from "./queues.js";
 
 /**
  * Worker entrypoint (M0).
@@ -18,7 +18,7 @@ async function main() {
     async (job) => {
       console.log(`[worker] heartbeat ${job.id} at ${new Date().toISOString()}`);
     },
-    { connection },
+    { connection, prefix: QUEUE_PREFIX },
   );
 
   worker.on("ready", () => console.log("[worker] connected to Redis, ready"));

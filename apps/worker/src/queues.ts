@@ -11,4 +11,15 @@ export const QUEUE_NAMES = {
   pipeline: "pipeline",
 } as const;
 
-export const heartbeatQueue = new Queue(QUEUE_NAMES.heartbeat, { connection });
+/**
+ * BullMQ key prefix — namespaces ALL of this app's Redis keys (default is
+ * "bull"). Set via BULLMQ_PREFIX so a shared Redis can host other projects
+ * without key collisions. Combine with a dedicated db index in REDIS_URL
+ * (e.g. redis://localhost:6379/3) for full isolation.
+ */
+export const QUEUE_PREFIX = process.env.BULLMQ_PREFIX ?? "insta";
+
+export const heartbeatQueue = new Queue(QUEUE_NAMES.heartbeat, {
+  connection,
+  prefix: QUEUE_PREFIX,
+});
