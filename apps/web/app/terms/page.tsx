@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 };
 
 const LAST_UPDATED = "22 June 2026";
-const CONTACT_EMAIL = "marketplace@deodap.com";
+const CONTACT_EMAIL = "derik6013@gmail.com";
 
 export default function TermsPage() {
   return (
