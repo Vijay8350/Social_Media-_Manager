@@ -25,6 +25,10 @@ export default function RootLayout({
             <a className="hover:text-neutral-800" href="/terms">
               Terms of Service
             </a>
+            <span aria-hidden>·</span>
+            <a className="hover:text-neutral-800" href="/data-deletion">
+              Data Deletion
+            </a>
           </nav>
         </footer>
       </body>
