@@ -8,6 +8,9 @@
  *
  * Prereqs on the box: Node >= 20, pnpm, Redis running, `pnpm install` done,
  * and `pnpm --filter @insta/web build` already run (next start serves .next).
+ *
+ * NOTE: both run in FORK mode (not cluster) — they launch the next/tsx CLI
+ * entrypoints with node, which cluster mode cannot do.
  */
 const path = require("node:path");
 
@@ -25,20 +28,22 @@ module.exports = {
     {
       name: "insta-web",
       cwd: path.join(__dirname, "apps/web"),
-      script: "node_modules/.bin/next",
+      script: "node_modules/next/dist/bin/next",
       args: `start -p ${webPort}`,
+      interpreter: "node",
+      exec_mode: "fork",
       env: { ...sharedEnv, PORT: webPort },
-      instances: 1,
       autorestart: true,
       max_memory_restart: "512M",
     },
     {
       name: "insta-worker",
       cwd: path.join(__dirname, "apps/worker"),
-      script: "node_modules/.bin/tsx",
+      script: "node_modules/tsx/dist/cli.mjs",
       args: "src/index.ts",
+      interpreter: "node",
+      exec_mode: "fork",
       env: sharedEnv,
-      instances: 1,
       autorestart: true,
       max_memory_restart: "512M",
     },
