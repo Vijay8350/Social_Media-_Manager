@@ -9,7 +9,7 @@ lives on GitHub; you pull + build + run on the instance with PM2.
 
 > ⚠️ **Shared server (other projects already running).** This guide is
 > **additive and non-destructive** — it does not remove existing nginx sites,
-> does not change the default web port (uses **3100**, not 3000), and isolates
+> does not change the default web port (uses **3200**, not 3000), and isolates
 > Redis keys with a dedicated db index + `BULLMQ_PREFIX`. Before installing
 > system packages, it checks what's already there so your other projects'
 > Node/nginx/Redis versions aren't disturbed.
@@ -17,7 +17,7 @@ lives on GitHub; you pull + build + run on the instance with PM2.
 ## Architecture on the box
 
 ```
-Internet ──443──> nginx ──> 127.0.0.1:3100  (PM2: insta-web  / next start)
+Internet ──443──> nginx ──> 127.0.0.1:3200  (PM2: insta-web  / next start)
                               127.0.0.1:6379/3  (Redis db 3, prefix "insta")
                                               <── PM2: insta-worker (BullMQ)
                        both processes read the repo-root .env
@@ -148,12 +148,12 @@ NEXT_PUBLIC_APP_URL=https://social.apanjob.com
 FACEBOOK_OAUTH_REDIRECT_URI=https://social.apanjob.com/api/instagram/callback
 
 # Isolation on the shared box:
-WEB_PORT=3100                          # must match nginx proxy_pass + your free port
+WEB_PORT=3200                          # must match nginx proxy_pass + your free port
 REDIS_URL=redis://localhost:6379/3     # dedicated db index (not 0)
 BULLMQ_PREFIX=insta                    # namespaces all queue keys
 ```
 
-> Confirm port 3100 is free first: `sudo ss -ltnp | grep :3100` (no output = free).
+> Confirm port 3200 is free first: `sudo ss -ltnp | grep :3200` (no output = free).
 > If taken, pick another and set WEB_PORT + the nginx `proxy_pass` port to match.
 
 Then update the external services:

@@ -18,7 +18,7 @@ const sharedEnv = { ...process.env, NODE_ENV: "production" };
 
 // Off the default 3000 to avoid clashing with other apps on a shared box.
 // Override per-box via WEB_PORT in the root .env; nginx must proxy to the same.
-const webPort = process.env.WEB_PORT || "3100";
+const webPort = process.env.WEB_PORT || "3200";
 
 module.exports = {
   apps: [
