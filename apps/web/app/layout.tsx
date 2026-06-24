@@ -14,7 +14,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="flex min-h-screen flex-col">
+        <div className="flex-1">{children}</div>
+        <footer className="border-t border-neutral-200 px-6 py-6 text-center text-xs text-neutral-500">
+          <nav className="flex justify-center gap-4">
+            <a className="hover:text-neutral-800" href="/privacy">
+              Privacy Policy
+            </a>
+            <span aria-hidden>·</span>
+            <a className="hover:text-neutral-800" href="/terms">
+              Terms of Service
+            </a>
+          </nav>
+        </footer>
+      </body>
     </html>
   );
 }
