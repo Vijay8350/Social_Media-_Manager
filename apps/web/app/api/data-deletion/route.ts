@@ -30,6 +30,18 @@ function parseSignedRequest(
 }
 
 /**
+ * Health/reachability response for GET (browsers and Meta's URL check). The real
+ * work happens on POST; without this, a GET returns 405 and looks "broken".
+ */
+export async function GET() {
+  return NextResponse.json({
+    status: "ok",
+    endpoint: "facebook_data_deletion_callback",
+    info: `POST a Facebook signed_request here, or see ${appUrl}/data-deletion`,
+  });
+}
+
+/**
  * Facebook Data Deletion Request callback.
  * Facebook POSTs `signed_request` (form-encoded). We verify it, log the request,
  * and return JSON { url, confirmation_code } pointing at our status page.
