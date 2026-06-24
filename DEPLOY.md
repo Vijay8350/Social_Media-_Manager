@@ -4,8 +4,8 @@ This deploys the **whole stack on one EC2 instance**: the Next.js web app, the
 BullMQ worker, Redis, and nginx (reverse proxy + HTTPS) for your domain. Source
 lives on GitHub; you pull + build + run on the instance with PM2.
 
-> Replace `YOURDOMAIN.com` everywhere with your real domain, and use your EC2's
-> public IP / DNS where noted.
+> Domain: **social.apanjob.com** · Repo: **github.com/Vijay8350/Social_Media-_Manager**
+> Use your EC2's public IP / Elastic IP where noted.
 
 ## Architecture on the box
 
@@ -23,12 +23,13 @@ The repo is already git-initialised with a first commit (see bottom of this
 file if not). Create an empty GitHub repo, then:
 
 ```bash
-git remote add origin https://github.com/<you>/insta-post-generator.git
+git remote add origin https://github.com/Vijay8350/Social_Media-_Manager.git
 git branch -M main
 git push -u origin main
 ```
 
 `.env` and all secrets are git-ignored — only `.env.example` is committed.
+(Already pushed — on the EC2 you just `git clone` in §4.)
 
 ---
 
@@ -67,8 +68,8 @@ redis-cli ping            # -> PONG
 
 ```bash
 cd ~
-git clone https://github.com/<you>/insta-post-generator.git
-cd insta-post-generator
+git clone https://github.com/Vijay8350/Social_Media-_Manager.git
+cd Social_Media-_Manager
 
 # Create the root .env (the source of truth for BOTH apps).
 cp .env.example .env
@@ -100,14 +101,13 @@ pm2 startup                        # run the printed command so PM2 restarts on 
 
 ```bash
 sudo cp deploy/nginx.conf /etc/nginx/sites-available/insta
-sudo sed -i 's/YOURDOMAIN.com/yourrealdomain.com/g' /etc/nginx/sites-available/insta
 sudo ln -sf /etc/nginx/sites-available/insta /etc/nginx/sites-enabled/insta
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 
 # TLS (after DNS in §8 has propagated):
 sudo apt-get install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d yourrealdomain.com -d www.yourrealdomain.com
+sudo certbot --nginx -d social.apanjob.com
 ```
 
 Certbot auto-renews via a systemd timer.
@@ -119,29 +119,30 @@ Certbot auto-renews via a systemd timer.
 In the root `.env` on the EC2, set these to your domain (then rebuild web, §4):
 
 ```
-NEXT_PUBLIC_APP_URL=https://YOURDOMAIN.com
-FACEBOOK_OAUTH_REDIRECT_URI=https://YOURDOMAIN.com/api/instagram/callback
+NEXT_PUBLIC_APP_URL=https://social.apanjob.com
+FACEBOOK_OAUTH_REDIRECT_URI=https://social.apanjob.com/api/instagram/callback
 ```
 
 Then update the external services:
 - **Meta app** → Facebook Login → Valid OAuth Redirect URIs: add
-  `https://YOURDOMAIN.com/api/instagram/callback`; add `YOURDOMAIN.com` to App Domains.
+  `https://social.apanjob.com/api/instagram/callback`; add `apanjob.com` to App Domains.
 - **Supabase** → Authentication → URL Configuration: set **Site URL** to
-  `https://YOURDOMAIN.com` and add it to **Redirect URLs** (so email confirm /
+  `https://social.apanjob.com` and add it to **Redirect URLs** (so email confirm /
   OAuth callbacks resolve to production, not localhost).
 
 ---
 
 ## 8. Point the domain at the EC2 (DNS, at your registrar)
 
-| Type | Name | Value |
-|------|------|-------|
-| A    | `@`  | `<EC2 Elastic IP>` |
-| A    | `www`| `<EC2 Elastic IP>` |
+Since `social.apanjob.com` is a **subdomain**, add one record at the DNS host
+for `apanjob.com`:
 
-(If your registrar/DNS only does CNAME for subdomains, point `app` → the EC2's
-public DNS name instead.) Propagation is usually minutes; verify with
-`dig YOURDOMAIN.com +short`.
+| Type | Name (Host) | Value |
+|------|-------------|-------|
+| A    | `social`    | `<EC2 Elastic IP>` |
+
+Propagation is usually minutes; verify with `dig social.apanjob.com +short`
+(should return your EC2 IP).
 
 ---
 
