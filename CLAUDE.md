@@ -4,9 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state
 
-**M0 (Scaffold) is built.** The repo is a pnpm-workspaces monorepo: `apps/web` (Next.js App Router + Tailwind + Supabase auth), `apps/worker` (BullMQ + Redis), `packages/shared` (types, env, crypto, Supabase service client), and `supabase/migrations/0001_init.sql` (full schema + RLS + storage bucket). The [build prompt](instagram-quote-saas-build-prompt.md) remains the authoritative spec.
+**All milestones M0–M10 are built** and the app is deployed live at **https://social.apanjob.com** (single AWS EC2: web + worker + Redis + nginx + HTTPS via PM2 — see [DEPLOY.md](DEPLOY.md)). The repo is a pnpm-workspaces monorepo: `apps/web` (Next.js App Router + Tailwind + Supabase auth + the full generation/publish UI), `apps/worker` (BullMQ scheduler + daily pipeline + analytics), `packages/shared` (types, env, crypto, Supabase clients, provider impls, prompt builders), and `supabase/migrations/0001_init.sql`.
 
-Continue **milestone by milestone** (M1–M10, see §13 of the brief). After each milestone, stop, summarize what was built, and give exact run/test commands before continuing. When real API keys or external accounts are needed, pause and ask the user; use `.env.example` placeholders in the meantime. Supabase is a **hosted cloud** project (no local Postgres); Supabase + Stripe keys are pending.
+- **Providers implemented in `packages/shared/src/providers`:** `llm.ts` (DeepSeek text), `image.ts` (Gemini image), `vision.ts` (Gemini quality gate), `instagram.ts` (Graph publish + insights).
+- **Manual flow** lives in `apps/web` server actions (`.../accounts/[id]/content/actions.ts`): generate text → image+QA → publish. **Autonomous flow** lives in `apps/worker` (`scheduler.ts` + `pipeline.ts`) running the same stages via the service role.
+- **Runtime config still needed for full posting:** real Gemini key, Stripe keys (billing), and re-enabling `instagram_content_publish` (add the Instagram product in the Meta app, drop the `FACEBOOK_SCOPES` override). See the memory files under this project for live-state details.
+
+The [build prompt](instagram-quote-saas-build-prompt.md) remains the authoritative spec. Redeploy after changes: `git pull && pnpm install && set -a; . ./.env; set +a && pnpm --filter @insta/web build && pm2 restart ecosystem.config.cjs --update-env`.
 
 ## What is being built
 

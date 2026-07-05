@@ -63,7 +63,7 @@ pwsh -File scripts/start-redis.ps1
 
 ```bash
 pnpm dev          # web at http://localhost:3000
-pnpm dev:worker   # worker (heartbeat every 60s, proves Redis wiring)
+pnpm dev:worker   # worker: scheduler tick (15m) + analytics pull (6h)
 ```
 
 Or run the worker + Redis fully in Docker:
@@ -85,10 +85,30 @@ pnpm --filter @insta/shared test
 pnpm --filter @insta/web build
 ```
 
-## Status
+## Deploy
 
-**M0 — Scaffold** (current): monorepo, Supabase schema + RLS + storage, auth
-(signup/login/logout, protected dashboard), worker + Redis wiring, docker-compose.
+Live at **https://social.apanjob.com**. Full production runbook (single AWS EC2:
+web + worker + Redis + nginx + HTTPS, PM2-managed) is in [DEPLOY.md](DEPLOY.md).
+Redeploy: `git pull && pnpm install && set -a; . ./.env; set +a && pnpm --filter @insta/web build && pm2 restart ecosystem.config.cjs --update-env`.
 
-Next: M1 Instagram connect → M2 Account DNA + prompt library → M3+ generation
-pipeline. See the milestone roadmap for details.
+Meta App Review checklist: [docs/APP_REVIEW.md](docs/APP_REVIEW.md).
+
+## Status — M0–M10 built
+
+| Milestone | What |
+|-----------|------|
+| M0 Scaffold | monorepo, Supabase schema + RLS + storage, auth, worker/Redis |
+| M1 Instagram connect | Facebook OAuth, long-lived encrypted tokens, multi-account, disconnect |
+| M2 DNA + prompts | per-account Account DNA + prompt library (CRUD) |
+| M3 Content (DeepSeek) | idea → de-dup → strict-JSON text; "Generate now" |
+| M4 Image (Gemini) | text baked into artwork → Supabase Storage |
+| M5 Quality gate (Gemini vision) | text-fidelity/legibility/on-DNA/safety, regenerate loop, fail-closed |
+| M6 Publishing | IG Graph container→publish, ≤25/24h, backoff |
+| M7 Autopilot | worker scheduler + daily per-account pipeline, idempotent, jobs_log |
+| M8 Analytics | insights pull → post_metrics + charts |
+| M9 Billing | Stripe checkout + portal + webhook; scheduler gated on active sub |
+| M10 Hardening | logging, backoff, README, App Review checklist |
+
+**Runtime config still needed for full posting:** real Gemini key, Stripe keys
+(for billing), and the `instagram_content_publish` scope (add the Instagram
+product in the Meta app, then drop the `FACEBOOK_SCOPES` override).
