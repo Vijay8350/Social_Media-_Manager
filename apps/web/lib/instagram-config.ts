@@ -3,13 +3,23 @@
  * Server-only. Never expose the app secret to the client.
  */
 
-export const FACEBOOK_SCOPES = [
+const DEFAULT_FACEBOOK_SCOPES = [
   "instagram_basic",
   "instagram_content_publish",
   "pages_show_list",
   "pages_read_engagement",
   "business_management",
-] as const;
+];
+
+/**
+ * OAuth scopes requested during Facebook Login. Overridable via the
+ * FACEBOOK_SCOPES env var (comma-separated) — useful to temporarily drop a
+ * permission that isn't enabled on the Meta app yet (e.g. instagram_content_publish
+ * before the Instagram product is added), so the connection can be tested.
+ */
+export const FACEBOOK_SCOPES: string[] = process.env.FACEBOOK_SCOPES
+  ? process.env.FACEBOOK_SCOPES.split(",").map((s) => s.trim()).filter(Boolean)
+  : DEFAULT_FACEBOOK_SCOPES;
 
 export interface InstagramConfig {
   appId: string;
