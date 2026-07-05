@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Post, PromptLibraryItem } from "@insta/shared";
-import { generateNow, generatePostImage } from "./actions";
+import { generateNow, generatePostImage, publishNowAction } from "./actions";
 import { GenerateForm } from "./GenerateForm";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -137,6 +137,28 @@ export default async function ContentPage({
                         })`
                       : ""}
                   </p>
+                )}
+
+                {/* Publish action / published state */}
+                {post.status === "published" ? (
+                  <p className="mt-3 text-xs text-green-700">
+                    Published{post.ig_media_id ? ` · media ${post.ig_media_id}` : ""}
+                    {post.published_at
+                      ? ` · ${new Date(post.published_at).toLocaleString()}`
+                      : ""}
+                  </p>
+                ) : (
+                  post.status === "queued" &&
+                  post.image_url && (
+                    <form
+                      action={publishNowAction.bind(null, id, post.id)}
+                      className="mt-3"
+                    >
+                      <button className="rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-700">
+                        Publish now
+                      </button>
+                    </form>
+                  )
                 )}
 
                 <p className="mt-2 text-xs text-neutral-400">

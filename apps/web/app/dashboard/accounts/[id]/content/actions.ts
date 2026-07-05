@@ -9,6 +9,8 @@ import {
   buildImagePrompt,
   normalizeHash,
   createServiceRoleClient,
+  decryptSecret,
+  publishImagePost,
   type AccountDna,
 } from "@insta/shared";
 
@@ -289,5 +291,113 @@ async function logJob(
     await svc.from("jobs_log").insert(entry);
   } catch {
     // never let logging break the pipeline
+  }
+}
+
+/** Void wrapper so publishNow can be used directly as a <form action>. */
+export async function publishNowAction(accountId: string, postId: string) {
+  await publishNow(accountId, postId);
+}
+
+const DAILY_LIMIT = 25;
+
+/**
+ * Publish a queued post to Instagram (M6). Fail-closed: only posts that are
+ * 'queued' (QA-passed) and have an image are eligible. Respects ~25 posts/24h.
+ */
+export async function publishNow(
+  accountId: string,
+  postId: string,
+): Promise<{ error?: string; ok?: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const { data: post } = await supabase
+    .from("posts")
+    .select("id, status, image_url, caption, hashtags")
+    .eq("id", postId)
+    .eq("account_id", accountId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!post) return { error: "Post not found" };
+  if (post.status !== "queued") return { error: `Cannot publish a '${post.status}' post` };
+  if (!post.image_url) return { error: "Generate the image first" };
+
+  const { data: account } = await supabase
+    .from("instagram_accounts")
+    .select("ig_user_id, encrypted_token, status")
+    .eq("id", accountId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!account?.ig_user_id || !account.encrypted_token) {
+    return { error: "Account not connected" };
+  }
+
+  // Rate limit: ≤25 published per account per 24h.
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("posts")
+    .select("id", { count: "exact", head: true })
+    .eq("account_id", accountId)
+    .eq("status", "published")
+    .gte("published_at", since);
+  if ((count ?? 0) >= DAILY_LIMIT) {
+    return { error: `Daily limit reached (${DAILY_LIMIT}/24h)` };
+  }
+
+  const svc = createServiceRoleClient();
+  try {
+    const { data: signed } = await svc.storage
+      .from(IMAGE_BUCKET)
+      .createSignedUrl(post.image_url, 3600);
+    if (!signed?.signedUrl) return { error: "Could not sign image URL" };
+
+    const caption = [post.caption, (post.hashtags as string[])?.join(" ")]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const token = decryptSecret(account.encrypted_token);
+    const result = await publishImagePost({
+      igUserId: account.ig_user_id,
+      pageAccessToken: token,
+      imageUrl: signed.signedUrl,
+      caption,
+    });
+
+    await supabase
+      .from("posts")
+      .update({
+        status: "published",
+        ig_media_id: result.mediaId,
+        published_at: new Date().toISOString(),
+      })
+      .eq("id", postId);
+
+    await logJob(svc, {
+      user_id: user.id,
+      account_id: accountId,
+      post_id: postId,
+      stage: "publish",
+      level: "info",
+      message: `published ${result.mediaId}`,
+      context: {},
+    });
+    revalidatePath(`/dashboard/accounts/${accountId}/content`);
+    return { ok: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Publish failed";
+    await logJob(svc, {
+      user_id: user.id,
+      account_id: accountId,
+      post_id: postId,
+      stage: "publish",
+      level: "error",
+      message,
+      context: {},
+    });
+    return { error: message };
   }
 }
