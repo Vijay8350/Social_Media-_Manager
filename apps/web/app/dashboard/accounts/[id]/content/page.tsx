@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Post, PromptLibraryItem } from "@insta/shared";
-import { generateNow } from "./actions";
+import { generateNow, generatePostImage } from "./actions";
 import { GenerateForm } from "./GenerateForm";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -41,6 +41,19 @@ export default async function ContentPage({
   }));
   const posts = (postRows as Post[] | null) ?? [];
   const boundGenerate = generateNow.bind(null, id);
+
+  // Signed URLs for previewing images from the private bucket (owner-readable via RLS).
+  const signedUrls = new Map<string, string>();
+  await Promise.all(
+    posts
+      .filter((p) => p.image_url)
+      .map(async (p) => {
+        const { data } = await supabase.storage
+          .from("post-images")
+          .createSignedUrl(p.image_url as string, 3600);
+        if (data?.signedUrl) signedUrls.set(p.id, data.signedUrl);
+      }),
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -88,6 +101,26 @@ export default async function ContentPage({
                     {post.hashtags.join(" ")}
                   </p>
                 )}
+
+                {/* Image preview / generate */}
+                {signedUrls.has(post.id) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={signedUrls.get(post.id)}
+                    alt={post.headline ?? "post image"}
+                    className="mt-3 w-48 rounded-md border border-neutral-200"
+                  />
+                ) : (
+                  <form
+                    action={generatePostImage.bind(null, id, post.id)}
+                    className="mt-3"
+                  >
+                    <button className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100">
+                      Generate image
+                    </button>
+                  </form>
+                )}
+
                 <p className="mt-2 text-xs text-neutral-400">
                   {post.origin} · {new Date(post.created_at).toLocaleString()}
                 </p>

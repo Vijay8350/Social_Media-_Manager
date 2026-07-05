@@ -6,3 +6,4 @@ export * from "./schemas";
 export * from "./hash";
 export * from "./prompt";
 export * from "./providers/llm";
+export * from "./providers/image";

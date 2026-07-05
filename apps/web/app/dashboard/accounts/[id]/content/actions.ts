@@ -2,7 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getLLMProvider, normalizeHash, type AccountDna } from "@insta/shared";
+import {
+  getLLMProvider,
+  getImageProvider,
+  buildImagePrompt,
+  normalizeHash,
+  createServiceRoleClient,
+  type AccountDna,
+} from "@insta/shared";
+
+const IMAGE_BUCKET = "post-images";
 
 export type GenState = { error?: string; ok?: boolean } | undefined;
 
@@ -134,4 +143,83 @@ export async function generateNow(
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Generation failed" };
   }
+}
+
+/**
+ * Generate the finished image for a queued post (Gemini) and store it in the
+ * private post-images bucket at "{user_id}/{account_id}/{post_id}.png". Uses the
+ * service role for the storage write (bucket writes bypass RLS); the DB stays on
+ * the user's RLS session. Rotates an active image-idea prompt.
+ */
+export async function generatePostImage(accountId: string, postId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: post } = await supabase
+    .from("posts")
+    .select("id, account_id, headline, lines")
+    .eq("id", postId)
+    .eq("account_id", accountId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!post) return;
+
+  const { data: dnaRow } = await supabase
+    .from("account_dna")
+    .select("*")
+    .eq("account_id", accountId)
+    .maybeSingle();
+  const dna = (dnaRow as AccountDna | null) ?? null;
+
+  // Rotate: least-recently-used active image-idea prompt.
+  const { data: imgPrompt } = await supabase
+    .from("prompt_library")
+    .select("id, prompt_text, use_count")
+    .eq("account_id", accountId)
+    .eq("type", "image_idea")
+    .eq("active", true)
+    .order("last_used_at", { ascending: true, nullsFirst: true })
+    .limit(1)
+    .maybeSingle();
+
+  const prompt = buildImagePrompt(dna, imgPrompt?.prompt_text ?? null, {
+    headline: post.headline ?? "",
+    lines: (post.lines as string[]) ?? [],
+  });
+
+  try {
+    await supabase.from("posts").update({ status: "generating" }).eq("id", postId);
+
+    const image = await getImageProvider().generateImage(prompt);
+    const path = `${user.id}/${accountId}/${postId}.png`;
+
+    const svc = createServiceRoleClient();
+    const { error: upErr } = await svc.storage
+      .from(IMAGE_BUCKET)
+      .upload(path, image.bytes, { contentType: image.mimeType, upsert: true });
+    if (upErr) throw new Error(upErr.message);
+
+    await supabase
+      .from("posts")
+      .update({ image_url: path, status: "queued" })
+      .eq("id", postId);
+
+    if (imgPrompt) {
+      await supabase
+        .from("prompt_library")
+        .update({
+          use_count: (imgPrompt.use_count ?? 0) + 1,
+          last_used_at: new Date().toISOString(),
+        })
+        .eq("id", imgPrompt.id);
+    }
+  } catch (err) {
+    await supabase.from("posts").update({ status: "queued" }).eq("id", postId);
+    console.error("[generatePostImage] failed:", err);
+  }
+
+  revalidatePath(`/dashboard/accounts/${accountId}/content`);
 }
