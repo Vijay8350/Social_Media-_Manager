@@ -1,0 +1,101 @@
+import { createClient } from "@/lib/supabase/server";
+import type { Post, PromptLibraryItem } from "@insta/shared";
+import { generateNow } from "./actions";
+import { GenerateForm } from "./GenerateForm";
+
+const STATUS_STYLE: Record<string, string> = {
+  queued: "bg-blue-50 text-blue-700",
+  generating: "bg-amber-50 text-amber-700",
+  qa_failed: "bg-red-50 text-red-700",
+  published: "bg-green-50 text-green-700",
+  skipped: "bg-neutral-100 text-neutral-500",
+};
+
+export default async function ContentPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const [{ data: promptRows }, { data: postRows }] = await Promise.all([
+    supabase
+      .from("prompt_library")
+      .select("id, label, type, active")
+      .eq("account_id", id)
+      .eq("type", "quote_idea")
+      .eq("active", true)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("posts")
+      .select("*")
+      .eq("account_id", id)
+      .order("created_at", { ascending: false })
+      .limit(30),
+  ]);
+
+  const prompts = ((promptRows as PromptLibraryItem[] | null) ?? []).map((p) => ({
+    id: p.id,
+    label: p.label,
+  }));
+  const posts = (postRows as Post[] | null) ?? [];
+  const boundGenerate = generateNow.bind(null, id);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <GenerateForm action={boundGenerate} prompts={prompts} />
+
+      <section>
+        <h2 className="text-sm font-semibold text-neutral-900">
+          Content queue <span className="text-neutral-400">({posts.length})</span>
+        </h2>
+        {posts.length === 0 ? (
+          <p className="mt-2 text-sm text-neutral-500">
+            Nothing generated yet. Use “Generate now” above.
+          </p>
+        ) : (
+          <ul className="mt-3 flex flex-col gap-3">
+            {posts.map((post) => (
+              <li
+                key={post.id}
+                className="rounded-lg border border-neutral-200 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-semibold">{post.headline}</p>
+                  <span
+                    className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
+                      STATUS_STYLE[post.status] ?? "bg-neutral-100 text-neutral-600"
+                    }`}
+                  >
+                    {post.status}
+                  </span>
+                </div>
+                {post.lines?.length > 0 && (
+                  <ul className="mt-1 list-disc pl-5 text-sm text-neutral-700">
+                    {post.lines.map((l, i) => (
+                      <li key={i}>{l}</li>
+                    ))}
+                  </ul>
+                )}
+                {post.caption && (
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-600">
+                    {post.caption}
+                  </p>
+                )}
+                {post.hashtags?.length > 0 && (
+                  <p className="mt-2 text-xs text-neutral-500">
+                    {post.hashtags.join(" ")}
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-neutral-400">
+                  {post.origin} · {new Date(post.created_at).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}

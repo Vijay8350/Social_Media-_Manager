@@ -52,6 +52,12 @@ export default async function AccountLayout({
         >
           Prompt Library
         </Link>
+        <Link
+          href={`/dashboard/accounts/${id}/content`}
+          className="border-b-2 border-transparent pb-2 hover:border-neutral-400"
+        >
+          Content
+        </Link>
       </nav>
 
       <div className="mt-8">{children}</div>
