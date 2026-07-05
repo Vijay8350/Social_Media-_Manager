@@ -10,7 +10,7 @@ const credentials = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export type AuthState = { error: string } | undefined;
+export type AuthState = { error?: string; notice?: string } | undefined;
 
 export async function login(
   _prev: AuthState,
@@ -45,7 +45,7 @@ export async function signup(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     ...parsed.data,
     options: {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
@@ -53,8 +53,17 @@ export async function signup(
   });
   if (error) return { error: error.message };
 
-  // With email confirmation off (local dev) the user is signed in immediately.
-  // With it on, they must confirm via the emailed link → /auth/callback.
+  // If email confirmation is ON, signUp returns no session — the user must
+  // confirm via the emailed link (→ /auth/callback) before logging in. Redirecting
+  // to /dashboard in that case just bounces to /login and looks broken, so show a
+  // clear notice instead. If confirmation is OFF, a session exists → go to dashboard.
+  if (!data.session) {
+    return {
+      notice:
+        "Account created. Check your email for a confirmation link, then log in.",
+    };
+  }
+
   revalidatePath("/", "layout");
   redirect("/dashboard");
 }

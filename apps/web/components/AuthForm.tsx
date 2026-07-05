@@ -52,6 +52,11 @@ export function AuthForm({
         {state?.error && (
           <p className="text-sm text-red-600">{state.error}</p>
         )}
+        {state?.notice && (
+          <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
+            {state.notice}
+          </p>
+        )}
 
         <button
           type="submit"
