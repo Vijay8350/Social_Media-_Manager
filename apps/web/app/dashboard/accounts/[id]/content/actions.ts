@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getLLMProvider,
   getImageProvider,
+  getVisionProvider,
   buildImagePrompt,
   normalizeHash,
   createServiceRoleClient,
@@ -12,6 +13,7 @@ import {
 } from "@insta/shared";
 
 const IMAGE_BUCKET = "post-images";
+const MAX_REGEN_ATTEMPTS = Number(process.env.MAX_REGEN_ATTEMPTS) || 3;
 
 export type GenState = { error?: string; ok?: boolean } | undefined;
 
@@ -185,26 +187,64 @@ export async function generatePostImage(accountId: string, postId: string) {
     .limit(1)
     .maybeSingle();
 
-  const prompt = buildImagePrompt(dna, imgPrompt?.prompt_text ?? null, {
+  const intended = {
     headline: post.headline ?? "",
-    lines: (post.lines as string[]) ?? [],
-  });
+    lines: ((post.lines as string[]) ?? []),
+  };
+  const prompt = buildImagePrompt(dna, imgPrompt?.prompt_text ?? null, intended);
+
+  const svc = createServiceRoleClient();
+  const path = `${user.id}/${accountId}/${postId}.png`;
+  const image = getImageProvider();
+  const vision = getVisionProvider();
 
   try {
     await supabase.from("posts").update({ status: "generating" }).eq("id", postId);
 
-    const image = await getImageProvider().generateImage(prompt);
-    const path = `${user.id}/${accountId}/${postId}.png`;
+    // Generate → quality-gate → regenerate loop (M4 + M5). Fail closed.
+    let attempt = 0;
+    let passed = false;
+    let lastVerdict: { score: number; reasons: string[] } = { score: 0, reasons: [] };
+    let lastBytes: Buffer | null = null;
+    let lastMime = "image/png";
 
-    const svc = createServiceRoleClient();
-    const { error: upErr } = await svc.storage
-      .from(IMAGE_BUCKET)
-      .upload(path, image.bytes, { contentType: image.mimeType, upsert: true });
-    if (upErr) throw new Error(upErr.message);
+    while (attempt < MAX_REGEN_ATTEMPTS && !passed) {
+      attempt += 1;
+      const img = await image.generateImage(prompt);
+      lastBytes = img.bytes;
+      lastMime = img.mimeType;
+
+      const verdict = await vision.scoreImage(img, intended, dna);
+      lastVerdict = { score: verdict.score, reasons: verdict.reasons };
+      await logJob(svc, {
+        user_id: user.id,
+        account_id: accountId,
+        post_id: postId,
+        stage: "quality_gate",
+        level: verdict.pass ? "info" : "warn",
+        message: `attempt ${attempt}: ${verdict.pass ? "pass" : "fail"} (${verdict.score})`,
+        context: { reasons: verdict.reasons },
+      });
+      if (verdict.pass) passed = true;
+    }
+
+    // Upload the final image (passing, or the last attempt for review).
+    if (lastBytes) {
+      const { error: upErr } = await svc.storage
+        .from(IMAGE_BUCKET)
+        .upload(path, lastBytes, { contentType: lastMime, upsert: true });
+      if (upErr) throw new Error(upErr.message);
+    }
 
     await supabase
       .from("posts")
-      .update({ image_url: path, status: "queued" })
+      .update({
+        image_url: lastBytes ? path : null,
+        status: passed ? "queued" : "qa_failed",
+        qa_score: lastVerdict.score,
+        qa_reasons: lastVerdict.reasons,
+        regen_attempts: attempt,
+      })
       .eq("id", postId);
 
     if (imgPrompt) {
@@ -218,8 +258,36 @@ export async function generatePostImage(accountId: string, postId: string) {
     }
   } catch (err) {
     await supabase.from("posts").update({ status: "queued" }).eq("id", postId);
-    console.error("[generatePostImage] failed:", err);
+    await logJob(svc, {
+      user_id: user.id,
+      account_id: accountId,
+      post_id: postId,
+      stage: "image_qa",
+      level: "error",
+      message: err instanceof Error ? err.message : "image/qa failed",
+      context: {},
+    });
   }
 
   revalidatePath(`/dashboard/accounts/${accountId}/content`);
+}
+
+/** Best-effort audit log via the service role (jobs_log writes bypass RLS). */
+async function logJob(
+  svc: ReturnType<typeof createServiceRoleClient>,
+  entry: {
+    user_id: string;
+    account_id: string;
+    post_id: string;
+    stage: string;
+    level: string;
+    message: string;
+    context: Record<string, unknown>;
+  },
+) {
+  try {
+    await svc.from("jobs_log").insert(entry);
+  } catch {
+    // never let logging break the pipeline
+  }
 }

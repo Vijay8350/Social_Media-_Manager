@@ -121,6 +121,24 @@ export default async function ContentPage({
                   </form>
                 )}
 
+                {post.qa_score != null && (
+                  <p
+                    className={`mt-2 text-xs ${
+                      post.status === "qa_failed" ? "text-red-600" : "text-neutral-500"
+                    }`}
+                  >
+                    QA score {post.qa_score}
+                    {post.qa_reasons?.length
+                      ? ` — ${post.qa_reasons.join("; ")}`
+                      : ""}
+                    {post.regen_attempts
+                      ? ` (after ${post.regen_attempts} attempt${
+                          post.regen_attempts > 1 ? "s" : ""
+                        })`
+                      : ""}
+                  </p>
+                )}
+
                 <p className="mt-2 text-xs text-neutral-400">
                   {post.origin} · {new Date(post.created_at).toLocaleString()}
                 </p>
