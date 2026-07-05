@@ -11,7 +11,7 @@ function version(): string {
 }
 
 async function graphPost<T>(url: string): Promise<T> {
-  const res = await fetch(url, { method: "POST", cache: "no-store" });
+  const res = await fetch(url, { method: "POST" });
   const body = (await res.json()) as T & {
     error?: { message?: string; code?: number };
   };

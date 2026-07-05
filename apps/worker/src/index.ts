@@ -1,48 +1,57 @@
 import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection } from "./redis.js";
-import { QUEUE_NAMES, QUEUE_PREFIX, heartbeatQueue } from "./queues.js";
+import { QUEUE_NAMES, QUEUE_PREFIX, schedulerQueue } from "./queues.js";
+import { runDailyPipeline } from "./pipeline.js";
+import { scanAndEnqueue } from "./scheduler.js";
 
 /**
- * Worker entrypoint (M0).
+ * Worker entrypoint (M7 autopilot).
  *
- * Proves the BullMQ + Redis wiring: a repeatable "heartbeat" job is scheduled
- * every 60s and processed here. Later milestones replace this with the daily
- * per-account pipeline (Stages 1-6) and the scheduler that enqueues it.
+ * - scheduler queue: a repeatable tick (every 15 min) scans accounts and
+ *   enqueues due daily pipeline jobs (idempotent per day).
+ * - pipeline queue: runs the full Stage 1–5 chain for one account, with
+ *   BullMQ retries/backoff on transient failures.
  */
 async function main() {
   console.log("[worker] starting…");
 
-  const worker = new Worker(
-    QUEUE_NAMES.heartbeat,
-    async (job) => {
-      console.log(`[worker] heartbeat ${job.id} at ${new Date().toISOString()}`);
+  const schedulerWorker = new Worker(
+    QUEUE_NAMES.scheduler,
+    async () => {
+      const n = await scanAndEnqueue();
+      if (n > 0) console.log(`[scheduler] enqueued ${n} account(s)`);
     },
     { connection, prefix: QUEUE_PREFIX },
   );
 
-  worker.on("ready", () => console.log("[worker] connected to Redis, ready"));
-  worker.on("failed", (job, err) =>
-    console.error(`[worker] job ${job?.id} failed:`, err.message),
+  const pipelineWorker = new Worker(
+    QUEUE_NAMES.pipeline,
+    async (job) => {
+      const { accountId, userId } = job.data as { accountId: string; userId: string };
+      console.log(`[pipeline] run account=${accountId}`);
+      await runDailyPipeline(accountId, userId);
+    },
+    { connection, prefix: QUEUE_PREFIX, concurrency: 2 },
   );
 
-  // Schedule a repeatable heartbeat every 60s (idempotent on restart).
-  await heartbeatQueue.add(
+  schedulerWorker.on("ready", () => console.log("[worker] connected to Redis, ready"));
+  pipelineWorker.on("failed", (job, err) =>
+    console.error(`[pipeline] job ${job?.id} failed:`, err.message),
+  );
+
+  // Repeatable scheduler tick every 15 minutes (idempotent id).
+  await schedulerQueue.add(
     "tick",
     {},
-    {
-      repeat: { every: 60_000 },
-      removeOnComplete: true,
-      removeOnFail: 50,
-    },
+    { repeat: { every: 15 * 60_000 }, removeOnComplete: true, removeOnFail: 50 },
   );
-
-  console.log("[worker] heartbeat scheduled (every 60s)");
+  console.log("[worker] scheduler tick scheduled (every 15m)");
 
   const shutdown = async () => {
     console.log("[worker] shutting down…");
-    await worker.close();
-    await heartbeatQueue.close();
+    await schedulerWorker.close();
+    await pipelineWorker.close();
     process.exit(0);
   };
   process.on("SIGINT", shutdown);

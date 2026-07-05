@@ -9,6 +9,7 @@ import { connection } from "./redis.js";
 export const QUEUE_NAMES = {
   heartbeat: "heartbeat",
   pipeline: "pipeline",
+  scheduler: "scheduler",
 } as const;
 
 /**
@@ -20,6 +21,16 @@ export const QUEUE_NAMES = {
 export const QUEUE_PREFIX = process.env.BULLMQ_PREFIX ?? "insta";
 
 export const heartbeatQueue = new Queue(QUEUE_NAMES.heartbeat, {
+  connection,
+  prefix: QUEUE_PREFIX,
+});
+
+export const pipelineQueue = new Queue(QUEUE_NAMES.pipeline, {
+  connection,
+  prefix: QUEUE_PREFIX,
+});
+
+export const schedulerQueue = new Queue(QUEUE_NAMES.scheduler, {
   connection,
   prefix: QUEUE_PREFIX,
 });
