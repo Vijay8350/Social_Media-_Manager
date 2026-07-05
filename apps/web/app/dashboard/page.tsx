@@ -122,17 +122,31 @@ export default async function DashboardPage({
                       : ""}
                   </p>
                 </div>
-                <form
-                  action={`/api/instagram/${acct.id}/disconnect`}
-                  method="post"
-                >
-                  <button
-                    type="submit"
+                <div className="flex shrink-0 items-center gap-2">
+                  <a
+                    href={`/dashboard/accounts/${acct.id}/dna`}
                     className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100"
                   >
-                    Disconnect
-                  </button>
-                </form>
+                    DNA
+                  </a>
+                  <a
+                    href={`/dashboard/accounts/${acct.id}/prompts`}
+                    className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100"
+                  >
+                    Prompts
+                  </a>
+                  <form
+                    action={`/api/instagram/${acct.id}/disconnect`}
+                    method="post"
+                  >
+                    <button
+                      type="submit"
+                      className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100"
+                    >
+                      Disconnect
+                    </button>
+                  </form>
+                </div>
               </li>
             ))}
           </ul>
