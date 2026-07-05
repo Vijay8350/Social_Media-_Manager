@@ -30,7 +30,7 @@ export default async function AccountLayout({
     <main className="mx-auto max-w-3xl px-6 py-10">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+          <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline">
             ← Dashboard
           </Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">
@@ -39,28 +39,28 @@ export default async function AccountLayout({
         </div>
       </div>
 
-      <nav className="mt-6 flex gap-4 border-b border-neutral-200 text-sm">
+      <nav className="mt-6 flex gap-4 border-b border-border text-sm">
         <Link
           href={`/dashboard/accounts/${id}/dna`}
-          className="border-b-2 border-transparent pb-2 hover:border-neutral-400"
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
         >
           Account DNA
         </Link>
         <Link
           href={`/dashboard/accounts/${id}/prompts`}
-          className="border-b-2 border-transparent pb-2 hover:border-neutral-400"
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
         >
           Prompt Library
         </Link>
         <Link
           href={`/dashboard/accounts/${id}/content`}
-          className="border-b-2 border-transparent pb-2 hover:border-neutral-400"
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
         >
           Content
         </Link>
         <Link
           href={`/dashboard/accounts/${id}/analytics`}
-          className="border-b-2 border-transparent pb-2 hover:border-neutral-400"
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
         >
           Analytics
         </Link>

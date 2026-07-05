@@ -21,10 +21,10 @@ export function GenerateForm({
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-4"
+      className="flex flex-col gap-3 rounded-lg border border-border p-4"
     >
       <h3 className="text-sm font-semibold">Generate now</h3>
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-muted-foreground">
         Pick one of your active quote-idea prompts, or type an ad-hoc point. This
         runs idea → text (DeepSeek) and queues a post. Image comes in the next
         milestone.
@@ -34,7 +34,7 @@ export function GenerateForm({
         Use a prompt
         <select
           name="promptId"
-          className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          className="rounded-md border border-border px-3 py-2 text-sm"
           defaultValue=""
         >
           <option value="">— none —</option>
@@ -52,7 +52,7 @@ export function GenerateForm({
           name="adhoc"
           rows={2}
           placeholder="e.g. a savage take on Mondays for Scorpios"
-          className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          className="rounded-md border border-border px-3 py-2 text-sm"
         />
       </label>
 
@@ -60,7 +60,7 @@ export function GenerateForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {pending ? "Generating…" : "Generate"}
         </button>

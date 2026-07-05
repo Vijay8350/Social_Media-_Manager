@@ -12,9 +12,9 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
       <h1 className="text-3xl font-semibold tracking-tight">Privacy Policy</h1>
-      <p className="mt-2 text-sm text-neutral-500">Last updated: {LAST_UPDATED}</p>
+      <p className="mt-2 text-sm text-muted-foreground">Last updated: {LAST_UPDATED}</p>
 
-      <div className="mt-8 space-y-6 text-sm leading-6 text-neutral-700">
+      <div className="mt-8 space-y-6 text-sm leading-6 text-muted-foreground">
         <p>
           This Privacy Policy explains how the Service (&ldquo;we&rdquo;,
           &ldquo;us&rdquo;) collects, uses, and protects your information when
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
         </p>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             1. Information we collect
           </h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             2. How we use your information
           </h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             3. Third-party services
           </h2>
           <p className="mt-2">
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             4. Data retention &amp; deletion
           </h2>
           <p className="mt-2">
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">5. Your rights</h2>
+          <h2 className="text-lg font-medium text-foreground">5. Your rights</h2>
           <p className="mt-2">
             You may request access to, correction of, or deletion of your
             personal data by contacting us. You can also revoke this app&rsquo;s
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">6. Security</h2>
+          <h2 className="text-lg font-medium text-foreground">6. Security</h2>
           <p className="mt-2">
             We use industry-standard measures including encryption of access
             tokens at rest, encrypted transport (HTTPS), and per-user data
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             7. Children&rsquo;s privacy
           </h2>
           <p className="mt-2">
@@ -129,7 +129,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             8. Changes to this policy
           </h2>
           <p className="mt-2">
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">9. Contact</h2>
+          <h2 className="text-lg font-medium text-foreground">9. Contact</h2>
           <p className="mt-2">
             Questions about this policy? Email{" "}
             <a className="underline" href={`mailto:${CONTACT_EMAIL}`}>

@@ -8,7 +8,7 @@ const STATUS_STYLE: Record<string, string> = {
   generating: "bg-amber-50 text-amber-700",
   qa_failed: "bg-red-50 text-red-700",
   published: "bg-green-50 text-green-700",
-  skipped: "bg-neutral-100 text-neutral-500",
+  skipped: "bg-muted text-muted-foreground",
 };
 
 export default async function ContentPage({
@@ -60,11 +60,11 @@ export default async function ContentPage({
       <GenerateForm action={boundGenerate} prompts={prompts} />
 
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">
-          Content queue <span className="text-neutral-400">({posts.length})</span>
+        <h2 className="text-sm font-semibold text-foreground">
+          Content queue <span className="text-muted-foreground">({posts.length})</span>
         </h2>
         {posts.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             Nothing generated yet. Use “Generate now” above.
           </p>
         ) : (
@@ -72,32 +72,32 @@ export default async function ContentPage({
             {posts.map((post) => (
               <li
                 key={post.id}
-                className="rounded-lg border border-neutral-200 p-4"
+                className="rounded-lg border border-border p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-semibold">{post.headline}</p>
                   <span
                     className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
-                      STATUS_STYLE[post.status] ?? "bg-neutral-100 text-neutral-600"
+                      STATUS_STYLE[post.status] ?? "bg-muted text-muted-foreground"
                     }`}
                   >
                     {post.status}
                   </span>
                 </div>
                 {post.lines?.length > 0 && (
-                  <ul className="mt-1 list-disc pl-5 text-sm text-neutral-700">
+                  <ul className="mt-1 list-disc pl-5 text-sm text-muted-foreground">
                     {post.lines.map((l, i) => (
                       <li key={i}>{l}</li>
                     ))}
                   </ul>
                 )}
                 {post.caption && (
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-600">
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
                     {post.caption}
                   </p>
                 )}
                 {post.hashtags?.length > 0 && (
-                  <p className="mt-2 text-xs text-neutral-500">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     {post.hashtags.join(" ")}
                   </p>
                 )}
@@ -108,14 +108,14 @@ export default async function ContentPage({
                   <img
                     src={signedUrls.get(post.id)}
                     alt={post.headline ?? "post image"}
-                    className="mt-3 w-48 rounded-md border border-neutral-200"
+                    className="mt-3 w-48 rounded-md border border-border"
                   />
                 ) : (
                   <form
                     action={generatePostImage.bind(null, id, post.id)}
                     className="mt-3"
                   >
-                    <button className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100">
+                    <button className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted">
                       Generate image
                     </button>
                   </form>
@@ -124,7 +124,7 @@ export default async function ContentPage({
                 {post.qa_score != null && (
                   <p
                     className={`mt-2 text-xs ${
-                      post.status === "qa_failed" ? "text-red-600" : "text-neutral-500"
+                      post.status === "qa_failed" ? "text-red-600" : "text-muted-foreground"
                     }`}
                   >
                     QA score {post.qa_score}
@@ -154,14 +154,14 @@ export default async function ContentPage({
                       action={publishNowAction.bind(null, id, post.id)}
                       className="mt-3"
                     >
-                      <button className="rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-700">
+                      <button className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90">
                         Publish now
                       </button>
                     </form>
                   )
                 )}
 
-                <p className="mt-2 text-xs text-neutral-400">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {post.origin} · {new Date(post.created_at).toLocaleString()}
                 </p>
               </li>

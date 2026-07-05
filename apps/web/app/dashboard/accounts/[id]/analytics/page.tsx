@@ -57,13 +57,13 @@ export default async function AnalyticsPage({
       </div>
 
       {posts.length === 0 ? (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-muted-foreground">
           No published posts yet. Metrics appear here after posts go live (the
           worker refreshes insights every few hours).
         </p>
       ) : (
         <section>
-          <h2 className="text-sm font-semibold text-neutral-900">Top posts</h2>
+          <h2 className="text-sm font-semibold text-foreground">Top posts</h2>
           <ul className="mt-3 flex flex-col gap-2">
             {[...posts]
               .sort(
@@ -74,15 +74,15 @@ export default async function AnalyticsPage({
                 const m = latest.get(post.id);
                 const likes = m?.likes ?? 0;
                 return (
-                  <li key={post.id} className="rounded-lg border border-neutral-200 p-3">
+                  <li key={post.id} className="rounded-lg border border-border p-3">
                     <p className="truncate text-sm font-medium">{post.headline}</p>
-                    <div className="mt-1 h-2 w-full rounded bg-neutral-100">
+                    <div className="mt-1 h-2 w-full rounded bg-muted">
                       <div
-                        className="h-2 rounded bg-neutral-800"
+                        className="h-2 rounded bg-primary"
                         style={{ width: `${Math.round((likes / maxLikes) * 100)}%` }}
                       />
                     </div>
-                    <p className="mt-1 text-xs text-neutral-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {m
                         ? `♥ ${m.likes ?? 0} · reach ${m.reach ?? "—"} · saves ${m.saves ?? "—"} · comments ${m.comments ?? 0}`
                         : "no metrics yet"}
@@ -99,8 +99,8 @@ export default async function AnalyticsPage({
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-neutral-200 p-3">
-      <p className="text-xs text-neutral-500">{label}</p>
+    <div className="rounded-lg border border-border p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-xl font-semibold">{value.toLocaleString()}</p>
     </div>
   );

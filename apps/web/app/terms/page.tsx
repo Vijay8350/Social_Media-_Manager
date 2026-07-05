@@ -12,9 +12,9 @@ export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
       <h1 className="text-3xl font-semibold tracking-tight">Terms of Service</h1>
-      <p className="mt-2 text-sm text-neutral-500">Last updated: {LAST_UPDATED}</p>
+      <p className="mt-2 text-sm text-muted-foreground">Last updated: {LAST_UPDATED}</p>
 
-      <div className="mt-8 space-y-6 text-sm leading-6 text-neutral-700">
+      <div className="mt-8 space-y-6 text-sm leading-6 text-muted-foreground">
         <p>
           These Terms of Service (&ldquo;Terms&rdquo;) govern your use of the
           Service. By creating an account or using the Service, you agree to
@@ -22,7 +22,7 @@ export default function TermsPage() {
         </p>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             1. Description of the Service
           </h2>
           <p className="mt-2">
@@ -33,7 +33,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">2. Eligibility</h2>
+          <h2 className="text-lg font-medium text-foreground">2. Eligibility</h2>
           <p className="mt-2">
             You must be at least 18 and able to form a binding contract. You must
             own or be authorized to manage any Instagram accounts you connect, and
@@ -50,7 +50,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             3. Your account &amp; responsibilities
           </h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -61,7 +61,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             4. Content &amp; AI-generated material
           </h2>
           <p className="mt-2">
@@ -74,7 +74,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             5. Third-party platforms
           </h2>
           <p className="mt-2">
@@ -87,7 +87,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             6. Subscriptions &amp; billing
           </h2>
           <p className="mt-2">
@@ -98,7 +98,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             7. Disclaimers &amp; limitation of liability
           </h2>
           <p className="mt-2">
@@ -110,7 +110,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">8. Termination</h2>
+          <h2 className="text-lg font-medium text-foreground">8. Termination</h2>
           <p className="mt-2">
             You may stop using the Service and delete your account at any time. We
             may suspend or terminate access if you violate these Terms or use the
@@ -120,7 +120,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             9. Changes to these Terms
           </h2>
           <p className="mt-2">
@@ -130,7 +130,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">10. Contact</h2>
+          <h2 className="text-lg font-medium text-foreground">10. Contact</h2>
           <p className="mt-2">
             Questions about these Terms? Email{" "}
             <a className="underline" href={`mailto:${CONTACT_EMAIL}`}>

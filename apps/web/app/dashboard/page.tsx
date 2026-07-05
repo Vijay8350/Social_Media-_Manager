@@ -49,21 +49,21 @@ export default async function DashboardPage({
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-neutral-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Signed in as {user.email}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <a
             href="/dashboard/billing"
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-100"
+            className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted"
           >
             Billing
           </a>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-100"
+              className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted"
             >
               Sign out
             </button>
@@ -78,7 +78,7 @@ export default async function DashboardPage({
         </p>
       )}
       {igDisconnected && (
-        <p className="mt-6 rounded-md bg-neutral-100 px-4 py-3 text-sm text-neutral-700">
+        <p className="mt-6 rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
           Instagram account disconnected.
         </p>
       )}
@@ -94,24 +94,24 @@ export default async function DashboardPage({
           {configured ? (
             <a
               href="/api/instagram/connect"
-              className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-800"
+              className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               Connect Instagram
             </a>
           ) : (
-            <span className="text-xs text-neutral-500">
+            <span className="text-xs text-muted-foreground">
               Set Meta app credentials to enable
             </span>
           )}
         </div>
 
         {list.length === 0 ? (
-          <div className="mt-4 rounded-lg border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-500">
+          <div className="mt-4 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
             No accounts connected yet. Connect a Business or Creator account
             that&apos;s linked to a Facebook Page.
           </div>
         ) : (
-          <ul className="mt-4 divide-y divide-neutral-200 rounded-lg border border-neutral-200">
+          <ul className="mt-4 divide-y divide-border rounded-lg border border-border">
             {list.map((acct) => (
               <li
                 key={acct.id}
@@ -121,7 +121,7 @@ export default async function DashboardPage({
                   <p className="text-sm font-medium">
                     @{acct.ig_username ?? acct.ig_user_id ?? "unknown"}
                   </p>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-muted-foreground">
                     {statusLabel(acct.status)}
                     {acct.token_expiry
                       ? ` · token valid until ${new Date(
@@ -133,13 +133,13 @@ export default async function DashboardPage({
                 <div className="flex shrink-0 items-center gap-2">
                   <a
                     href={`/dashboard/accounts/${acct.id}/dna`}
-                    className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100"
+                    className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
                   >
                     DNA
                   </a>
                   <a
                     href={`/dashboard/accounts/${acct.id}/prompts`}
-                    className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100"
+                    className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
                   >
                     Prompts
                   </a>
@@ -149,7 +149,7 @@ export default async function DashboardPage({
                   >
                     <button
                       type="submit"
-                      className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-100"
+                      className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted"
                     >
                       Disconnect
                     </button>
@@ -160,7 +160,7 @@ export default async function DashboardPage({
           </ul>
         )}
 
-        <p className="mt-3 text-xs text-neutral-500">
+        <p className="mt-3 text-xs text-muted-foreground">
           Requires an Instagram Business or Creator account linked to a Facebook
           Page. In Meta dev mode, only the app owner and whitelisted test
           accounts can connect.

@@ -22,11 +22,16 @@ export function AuthForm({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {isLogin ? "Log in" : "Create your account"}
-      </h1>
+      <div className="text-center">
+        <Link href="/" className="text-sm font-semibold tracking-tight">
+          Social Media Manager
+        </Link>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+          {isLogin ? "Welcome back" : "Create your account"}
+        </h1>
+      </div>
 
-      <form action={formAction} className="flex flex-col gap-4">
+      <form action={formAction} className="card flex flex-col gap-4 p-6">
         <label className="flex flex-col gap-1 text-sm">
           Email
           <input
@@ -34,7 +39,7 @@ export function AuthForm({
             name="email"
             required
             autoComplete="email"
-            className="rounded-md border border-neutral-300 px-3 py-2"
+            className="rounded-md border border-border px-3 py-2"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -45,7 +50,7 @@ export function AuthForm({
             required
             minLength={8}
             autoComplete={isLogin ? "current-password" : "new-password"}
-            className="rounded-md border border-neutral-300 px-3 py-2"
+            className="rounded-md border border-border px-3 py-2"
           />
         </label>
 
@@ -61,13 +66,13 @@ export function AuthForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {pending ? "Please wait…" : isLogin ? "Log in" : "Sign up"}
         </button>
       </form>
 
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-muted-foreground">
         {isLogin ? (
           <>
             No account?{" "}

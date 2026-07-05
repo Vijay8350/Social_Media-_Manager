@@ -2,10 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme tokens (RGB channels so Tailwind alpha modifiers work: bg-primary/90). */
 :root {
-  color-scheme: light dark;
+  --background: 250 249 247; /* warm off-white */
+  --foreground: 24 24 23; /* ink */
+  --card: 255 255 255;
+  --muted: 244 243 239;
+  --muted-foreground: 110 108 102;
+  --border: 230 228 222;
+  --primary: 24 24 23;
+  --primary-foreground: 250 249 247;
+  --accent: 200 90 58; /* warm coral */
+  --accent-foreground: 255 255 255;
 }
 
-body {
-  @apply bg-neutral-50 text-neutral-900 antialiased;
+.dark {
+  --background: 18 18 20;
+  --foreground: 237 236 233;
+  --card: 26 26 29;
+  --muted: 38 38 42;
+  --muted-foreground: 158 157 151;
+  --border: 44 44 49;
+  --primary: 237 236 233;
+  --primary-foreground: 18 18 20;
+  --accent: 227 130 100;
+  --accent-foreground: 24 18 16;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  /* Form controls readable in both themes without per-field classes. */
+  input,
+  textarea,
+  select {
+    @apply bg-transparent text-foreground;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-muted-foreground;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-border bg-card;
+  }
+  .btn-primary {
+    @apply rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply rounded-lg border border-border px-4 py-2 text-sm transition hover:bg-muted;
+  }
 }

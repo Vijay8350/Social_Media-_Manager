@@ -20,7 +20,7 @@ export default async function DataDeletionPage({
       <h1 className="text-3xl font-semibold tracking-tight">
         User Data Deletion
       </h1>
-      <p className="mt-2 text-sm text-neutral-500">Social Media Manager</p>
+      <p className="mt-2 text-sm text-muted-foreground">Social Media Manager</p>
 
       {code && (
         <div className="mt-6 rounded-md bg-green-50 px-4 py-3 text-sm text-green-800">
@@ -30,7 +30,7 @@ export default async function DataDeletionPage({
         </div>
       )}
 
-      <div className="mt-8 space-y-6 text-sm leading-6 text-neutral-700">
+      <div className="mt-8 space-y-6 text-sm leading-6 text-muted-foreground">
         <p>
           At Social Media Manager, we respect your right to control your personal
           data. If you would like to delete the data associated with your
@@ -38,7 +38,7 @@ export default async function DataDeletionPage({
         </p>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             How to request data deletion
           </h2>
           <ol className="mt-2 list-decimal space-y-1 pl-5">
@@ -68,7 +68,7 @@ export default async function DataDeletionPage({
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             What happens next
           </h2>
           <p className="mt-2">
@@ -82,7 +82,7 @@ export default async function DataDeletionPage({
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">
+          <h2 className="text-lg font-medium text-foreground">
             Data we remove
           </h2>
           <p className="mt-2">
@@ -93,7 +93,7 @@ export default async function DataDeletionPage({
         </section>
 
         <section>
-          <h2 className="text-lg font-medium text-neutral-900">Questions</h2>
+          <h2 className="text-lg font-medium text-foreground">Questions</h2>
           <p className="mt-2">
             If you have any questions about how we handle your data, contact us at{" "}
             <a className="underline" href={`mailto:${CONTACT_EMAIL}`}>

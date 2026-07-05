@@ -29,7 +29,7 @@ export default async function BillingPage({
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
-      <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+      <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline">
         ← Dashboard
       </Link>
       <h1 className="mt-1 text-2xl font-semibold tracking-tight">Billing</h1>
@@ -40,7 +40,7 @@ export default async function BillingPage({
         </p>
       )}
       {sp.canceled && (
-        <p className="mt-4 rounded-md bg-neutral-100 px-4 py-3 text-sm text-neutral-700">
+        <p className="mt-4 rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
           Checkout canceled.
         </p>
       )}
@@ -52,33 +52,33 @@ export default async function BillingPage({
         </p>
       )}
 
-      <div className="mt-6 rounded-lg border border-neutral-200 p-5">
-        <p className="text-sm text-neutral-600">Current plan</p>
+      <div className="mt-6 rounded-lg border border-border p-5">
+        <p className="text-sm text-muted-foreground">Current plan</p>
         <p className="mt-1 text-lg font-medium">
           {isActive ? "Active" : status === "none" ? "No subscription" : status}
         </p>
         {sub?.current_period_end && (
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Renews/ends {new Date(sub.current_period_end).toLocaleDateString()}
           </p>
         )}
 
         {!billing ? (
-          <p className="mt-4 text-sm text-neutral-500">
+          <p className="mt-4 text-sm text-muted-foreground">
             Billing is not configured on this environment.
           </p>
         ) : (
           <div className="mt-4 flex gap-3">
             {!isActive && (
               <form action="/api/stripe/checkout" method="post">
-                <button className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700">
+                <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
                   Subscribe
                 </button>
               </form>
             )}
             {sub?.stripe_customer_id && (
               <form action="/api/stripe/portal" method="post">
-                <button className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-100">
+                <button className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted">
                   Manage subscription
                 </button>
               </form>
@@ -87,7 +87,7 @@ export default async function BillingPage({
         )}
       </div>
 
-      <p className="mt-4 text-xs text-neutral-500">
+      <p className="mt-4 text-xs text-muted-foreground">
         The autopilot scheduler only runs for accounts whose manager has an
         active or trialing subscription.
       </p>

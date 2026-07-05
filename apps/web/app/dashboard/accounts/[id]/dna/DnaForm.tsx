@@ -6,8 +6,8 @@ import type { SaveState } from "./actions";
 
 type BoundAction = (prev: SaveState, formData: FormData) => Promise<SaveState>;
 
-const field = "rounded-md border border-neutral-300 px-3 py-2 text-sm";
-const labelCls = "flex flex-col gap-1 text-sm font-medium text-neutral-800";
+const field = "rounded-md border border-border px-3 py-2 text-sm";
+const labelCls = "flex flex-col gap-1 text-sm font-medium text-foreground";
 
 export function DnaForm({
   action,
@@ -25,7 +25,7 @@ export function DnaForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-muted-foreground">
         This DNA conditions every idea, caption, and image generated for this
         account. Fill it in once; you can edit anytime.
       </p>
@@ -57,7 +57,7 @@ export function DnaForm({
           placeholder={"daily motivation\nzodiac traits\nsavage comebacks"} />
       </label>
 
-      <fieldset className="rounded-md border border-neutral-200 p-4">
+      <fieldset className="rounded-md border border-border p-4">
         <legend className="px-1 text-sm font-semibold">Visual identity</legend>
         <div className="flex flex-col gap-4">
           <label className={labelCls}>
@@ -132,7 +132,7 @@ export function DnaForm({
 
       <div className="flex items-center gap-3">
         <button type="submit" disabled={pending}
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50">
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
           {pending ? "Saving…" : "Save DNA"}
         </button>
         {state?.ok && <span className="text-sm text-green-700">Saved ✓</span>}
