@@ -10,6 +10,7 @@ export const QUEUE_NAMES = {
   heartbeat: "heartbeat",
   pipeline: "pipeline",
   scheduler: "scheduler",
+  analytics: "analytics",
 } as const;
 
 /**
@@ -31,6 +32,11 @@ export const pipelineQueue = new Queue(QUEUE_NAMES.pipeline, {
 });
 
 export const schedulerQueue = new Queue(QUEUE_NAMES.scheduler, {
+  connection,
+  prefix: QUEUE_PREFIX,
+});
+
+export const analyticsQueue = new Queue(QUEUE_NAMES.analytics, {
   connection,
   prefix: QUEUE_PREFIX,
 });

@@ -1,9 +1,15 @@
 import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection } from "./redis.js";
-import { QUEUE_NAMES, QUEUE_PREFIX, schedulerQueue } from "./queues.js";
+import {
+  QUEUE_NAMES,
+  QUEUE_PREFIX,
+  schedulerQueue,
+  analyticsQueue,
+} from "./queues.js";
 import { runDailyPipeline } from "./pipeline.js";
 import { scanAndEnqueue } from "./scheduler.js";
+import { pullAnalytics } from "./analytics.js";
 
 /**
  * Worker entrypoint (M7 autopilot).
@@ -35,6 +41,15 @@ async function main() {
     { connection, prefix: QUEUE_PREFIX, concurrency: 2 },
   );
 
+  const analyticsWorker = new Worker(
+    QUEUE_NAMES.analytics,
+    async () => {
+      const n = await pullAnalytics();
+      if (n > 0) console.log(`[analytics] updated ${n} post metric(s)`);
+    },
+    { connection, prefix: QUEUE_PREFIX },
+  );
+
   schedulerWorker.on("ready", () => console.log("[worker] connected to Redis, ready"));
   pipelineWorker.on("failed", (job, err) =>
     console.error(`[pipeline] job ${job?.id} failed:`, err.message),
@@ -46,12 +61,19 @@ async function main() {
     {},
     { repeat: { every: 15 * 60_000 }, removeOnComplete: true, removeOnFail: 50 },
   );
-  console.log("[worker] scheduler tick scheduled (every 15m)");
+  // Analytics pull every 6 hours.
+  await analyticsQueue.add(
+    "pull",
+    {},
+    { repeat: { every: 6 * 60 * 60_000 }, removeOnComplete: true, removeOnFail: 50 },
+  );
+  console.log("[worker] scheduler (15m) + analytics (6h) scheduled");
 
   const shutdown = async () => {
     console.log("[worker] shutting down…");
     await schedulerWorker.close();
     await pipelineWorker.close();
+    await analyticsWorker.close();
     process.exit(0);
   };
   process.on("SIGINT", shutdown);

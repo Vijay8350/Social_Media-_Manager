@@ -26,6 +26,59 @@ async function graphPost<T>(url: string): Promise<T> {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+export interface MediaInsights {
+  likes: number | null;
+  comments: number | null;
+  reach: number | null;
+  saves: number | null;
+}
+
+/** Fetch engagement metrics for a published media (M8 analytics). Best-effort. */
+export async function fetchMediaInsights(
+  mediaId: string,
+  pageAccessToken: string,
+): Promise<MediaInsights> {
+  const v = version();
+  const out: MediaInsights = { likes: null, comments: null, reach: null, saves: null };
+
+  // Basic counts from the media node.
+  try {
+    const url = new URL(`${GRAPH}/${v}/${mediaId}`);
+    url.searchParams.set("fields", "like_count,comments_count");
+    url.searchParams.set("access_token", pageAccessToken);
+    const res = await fetch(url.toString());
+    if (res.ok) {
+      const d = (await res.json()) as { like_count?: number; comments_count?: number };
+      out.likes = d.like_count ?? null;
+      out.comments = d.comments_count ?? null;
+    }
+  } catch {
+    /* best-effort */
+  }
+
+  // Reach / saved from insights.
+  try {
+    const url = new URL(`${GRAPH}/${v}/${mediaId}/insights`);
+    url.searchParams.set("metric", "reach,saved");
+    url.searchParams.set("access_token", pageAccessToken);
+    const res = await fetch(url.toString());
+    if (res.ok) {
+      const d = (await res.json()) as {
+        data?: Array<{ name: string; values?: Array<{ value: number }> }>;
+      };
+      for (const m of d.data ?? []) {
+        const val = m.values?.[0]?.value ?? null;
+        if (m.name === "reach") out.reach = val;
+        if (m.name === "saved") out.saves = val;
+      }
+    }
+  } catch {
+    /* best-effort */
+  }
+
+  return out;
+}
+
 export interface PublishResult {
   mediaId: string;
   creationId: string;

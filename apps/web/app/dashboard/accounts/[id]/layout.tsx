@@ -58,6 +58,12 @@ export default async function AccountLayout({
         >
           Content
         </Link>
+        <Link
+          href={`/dashboard/accounts/${id}/analytics`}
+          className="border-b-2 border-transparent pb-2 hover:border-neutral-400"
+        >
+          Analytics
+        </Link>
       </nav>
 
       <div className="mt-8">{children}</div>

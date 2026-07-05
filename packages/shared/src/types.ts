@@ -119,6 +119,17 @@ export interface Post {
   created_at: string;
 }
 
+export interface PostMetric {
+  id: string;
+  post_id: string;
+  user_id: string;
+  likes: number | null;
+  reach: number | null;
+  saves: number | null;
+  comments: number | null;
+  fetched_at: string;
+}
+
 /** Strict shape returned by the content-generation stage (DeepSeek). */
 export interface GeneratedContent {
   headline: string;
