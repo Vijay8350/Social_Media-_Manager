@@ -42,8 +42,21 @@ export async function scanAndEnqueue(): Promise<number> {
     .eq("status", "connected");
   if (!accounts?.length) return 0;
 
+  // Subscription gate (M9): only run for paid managers when billing is enabled.
+  // If Stripe isn't configured, don't gate (dev / pre-billing).
+  const billingEnabled = Boolean(process.env.STRIPE_SECRET_KEY);
+  let paidUsers: Set<string> | null = null;
+  if (billingEnabled) {
+    const { data: subs } = await svc
+      .from("subscriptions")
+      .select("user_id, status")
+      .in("status", ["active", "trialing"]);
+    paidUsers = new Set((subs ?? []).map((s) => s.user_id));
+  }
+
   let enqueued = 0;
   for (const acct of accounts) {
+    if (paidUsers && !paidUsers.has(acct.user_id)) continue;
     const { data: dna } = await svc
       .from("account_dna")
       .select("default_post_time, timezone")

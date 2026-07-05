@@ -53,14 +53,22 @@ export default async function DashboardPage({
             Signed in as {user.email}
           </p>
         </div>
-        <form action="/auth/signout" method="post">
-          <button
-            type="submit"
+        <div className="flex items-center gap-2">
+          <a
+            href="/dashboard/billing"
             className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-100"
           >
-            Sign out
-          </button>
-        </form>
+            Billing
+          </a>
+          <form action="/auth/signout" method="post">
+            <button
+              type="submit"
+              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-100"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
       </header>
 
       {/* Status banners */}
