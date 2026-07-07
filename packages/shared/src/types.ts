@@ -71,7 +71,29 @@ export interface AccountDna {
   default_post_time: string | null; // "HH:mm"
   timezone: string | null;
   hashtag_strategy: string | null;
+  posting_slots: string[]; // ["08:00","20:30"]
+  autonomous: boolean;
   updated_at: string;
+}
+
+export type CampaignStatus = "draft" | "active" | "paused" | "done";
+
+export interface Campaign {
+  id: string;
+  account_id: string;
+  user_id: string;
+  name: string;
+  topic: string | null;
+  goal: string | null;
+  tone: string | null;
+  per_day: number;
+  days: number;
+  prompt: string | null;
+  reference_images: string[];
+  status: CampaignStatus;
+  posts_target: number;
+  posts_done: number;
+  created_at: string;
 }
 
 export interface PromptLibraryItem {

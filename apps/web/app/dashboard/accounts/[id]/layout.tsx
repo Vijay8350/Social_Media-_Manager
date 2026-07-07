@@ -59,6 +59,12 @@ export default async function AccountLayout({
           Content
         </Link>
         <Link
+          href={`/dashboard/accounts/${id}/schedule`}
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
+        >
+          Schedule
+        </Link>
+        <Link
           href={`/dashboard/accounts/${id}/analytics`}
           className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
         >

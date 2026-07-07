@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV = [
   { label: "Dashboard", icon: "▦", href: "/dashboard", exact: true },
+  { label: "Campaigns", icon: "▩", href: "/dashboard/campaigns", exact: false },
   { label: "Billing", icon: "▧", href: "/dashboard/billing", exact: false },
 ];
 
@@ -37,12 +38,6 @@ export function Sidebar({ email }: { email: string | null }) {
           </Link>
         );
       })}
-      <span className="flex cursor-default items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground/60">
-        <span className="w-4 text-center">▩</span>
-        Campaigns
-        <span className="ml-auto rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold">soon</span>
-      </span>
-
       <div className="mt-auto flex flex-col gap-2">
         <div className="flex items-center gap-2 px-1">
           <ThemeToggle />
