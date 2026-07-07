@@ -25,6 +25,7 @@ export default {
         accent: {
           DEFAULT: "rgb(var(--accent) / <alpha-value>)",
           foreground: "rgb(var(--accent-foreground) / <alpha-value>)",
+          soft: "rgb(var(--accent-soft) / <alpha-value>)",
         },
       },
     },

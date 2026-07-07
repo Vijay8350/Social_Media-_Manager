@@ -2,38 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Theme tokens (RGB channels so Tailwind alpha modifiers work: bg-primary/90). */
+/* ApanSocial design tokens. RGB channels so Tailwind alpha modifiers work. */
 :root {
-  --background: 250 249 247; /* warm off-white */
-  --foreground: 24 24 23; /* ink */
+  --background: 250 247 242; /* #FAF7F2 */
+  --foreground: 32 26 36; /* #201A24 ink */
   --card: 255 255 255;
-  --muted: 244 243 239;
-  --muted-foreground: 110 108 102;
-  --border: 230 228 222;
-  --primary: 24 24 23;
-  --primary-foreground: 250 249 247;
-  --accent: 200 90 58; /* warm coral */
+  --muted: 241 235 225; /* #F1EBE1 soft */
+  --muted-foreground: 113 104 122; /* #71687A */
+  --border: 231 224 212; /* #E7E0D4 */
+  --primary: 199 114 41; /* accent orange #C77229 */
+  --primary-foreground: 255 255 255;
+  --accent: 199 114 41;
   --accent-foreground: 255 255 255;
+  --accent-soft: 245 233 218; /* soft orange tint */
 }
 
 .dark {
-  --background: 18 18 20;
-  --foreground: 237 236 233;
-  --card: 26 26 29;
-  --muted: 38 38 42;
-  --muted-foreground: 158 157 151;
-  --border: 44 44 49;
-  --primary: 237 236 233;
-  --primary-foreground: 18 18 20;
-  --accent: 227 130 100;
-  --accent-foreground: 24 18 16;
+  --background: 20 17 25; /* #141119 */
+  --foreground: 241 237 230; /* #F1EDE6 */
+  --card: 29 25 37; /* #1D1925 */
+  --muted: 39 33 48; /* #272130 */
+  --muted-foreground: 156 147 168; /* #9C93A8 */
+  --border: 46 40 57; /* #2E2839 */
+  --primary: 224 169 78; /* lighter orange #E0A94E */
+  --primary-foreground: 32 26 36;
+  --accent: 224 169 78;
+  --accent-foreground: 32 26 36;
+  --accent-soft: 58 47 27; /* #3A2F1B */
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: "Instrument Sans", system-ui, sans-serif;
   }
-  /* Form controls readable in both themes without per-field classes. */
+  /* Display headings use Bricolage Grotesque. */
+  h1,
+  h2,
+  .font-display {
+    font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+    letter-spacing: -0.01em;
+  }
+  .font-quote {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-style: italic;
+  }
   input,
   textarea,
   select {
@@ -50,9 +63,9 @@
     @apply rounded-xl border border-border bg-card;
   }
   .btn-primary {
-    @apply rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50;
+    @apply rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50;
   }
   .btn-secondary {
-    @apply rounded-lg border border-border px-4 py-2 text-sm transition hover:bg-muted;
+    @apply rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium transition hover:bg-muted;
   }
 }

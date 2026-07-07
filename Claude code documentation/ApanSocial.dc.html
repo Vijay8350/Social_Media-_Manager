@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  body{margin:0}
+  [data-theme="light"]{--bg:#FAF7F2;--surface:#FFFFFF;--soft:#F1EBE1;--ink:#201A24;--muted:#71687A;--line:#E7E0D4;--accent-soft:color-mix(in oklab, var(--accent) 13%, #FFFFFF);--green:#237E57;--green-soft:#E2F2E9;--amber:#9A6A1B;--amber-soft:#F7ECD8;--red:#C03A3A;--red-soft:#F9E4E4;--shadow:0 1px 2px rgba(32,26,36,.05),0 10px 28px -14px rgba(32,26,36,.14)}
+  [data-theme="dark"]{--bg:#141119;--surface:#1D1925;--soft:#272130;--ink:#F1EDE6;--muted:#9C93A8;--line:#2E2839;--accent-soft:color-mix(in oklab, var(--accent) 20%, #1D1925);--green:#5BC392;--green-soft:#1E3329;--amber:#E0A94E;--amber-soft:#3A2F1B;--red:#E27070;--red-soft:#3B2222;--shadow:0 1px 2px rgba(0,0,0,.35),0 14px 32px -14px rgba(0,0,0,.55)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  input::placeholder{color:#9C93A8}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;--accent:{{ accent }};transition:background .3s,color .3s">
+
+  <!-- ============ LANDING ============ -->
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="Landing" style="max-width:1200px;margin:0 auto;padding:0 32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 0">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:20px;font-style:italic">&ldquo;</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px">ApanSocial</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:26px;font-size:14.5px;color:var(--muted);flex-shrink:1;min-width:0;overflow:hidden;white-space:nowrap">
+          <a href="#how" style="color:inherit;text-decoration:none">How it works</a>
+          <a href="#features" style="color:inherit;text-decoration:none">Features</a>
+          <a href="#pricing" style="color:inherit;text-decoration:none">Pricing</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <div onClick="{{ toggleTheme }}" style="width:34px;height:34px;border-radius:9px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;background:var(--surface);flex-shrink:0">{{ themeIcon }}</div>
+          <div onClick="{{ goLogin }}" style="padding:8px 16px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14.5px;border:1px solid var(--line);background:var(--surface);white-space:nowrap">Sign in</div>
+          <div onClick="{{ goLogin }}" style="padding:8px 16px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14.5px;background:var(--accent);color:#fff;white-space:nowrap">Start free trial</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding:64px 0 72px">
+        <div style="animation:rise .6s ease both">
+          <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:13px;margin-bottom:20px">Official Instagram Graph API · zero automation hacks</div>
+          <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-size:58px;line-height:1.04;font-weight:800;margin:0 0 20px;letter-spacing:-.02em;text-wrap:balance">Your quote pages, posting daily. Without you.</h1>
+          <p style="font-size:18px;line-height:1.6;color:var(--muted);margin:0 0 28px;max-width:520px;text-wrap:pretty">ApanSocial generates on-brand quote art from each account's DNA, runs every post through an AI quality gate, and publishes on schedule — fully unattended, never on uncertainty.</p>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div onClick="{{ goLogin }}" style="padding:13px 24px;border-radius:11px;cursor:pointer;font-weight:700;font-size:15.5px;background:var(--accent);color:#fff;box-shadow:var(--shadow);white-space:nowrap">Start free trial</div>
+            <a href="#how" style="padding:13px 24px;border-radius:11px;cursor:pointer;font-weight:600;font-size:15.5px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;white-space:nowrap">See the pipeline</a>
+          </div>
+          <div style="display:flex;gap:20px;margin-top:26px;font-size:13.5px;color:var(--muted)">
+            <div>✓ No credit card for trial</div><div>✓ Business &amp; Creator accounts</div><div>✓ Fail-closed quality gate</div>
+          </div>
+        </div>
+        <div style="position:relative;display:flex;justify-content:center;animation:rise .7s .1s ease both">
+          <div style="width:320px;aspect-ratio:4/5;border-radius:18px;background:#211C26;display:flex;flex-direction:column;justify-content:space-between;padding:34px 30px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.06)">
+            <div style="color:#B7A98F;font-size:11px;letter-spacing:.28em;font-weight:600">STOIC HINDI</div>
+            <div style="font-family:'Instrument Serif',serif;font-style:italic;font-size:31px;line-height:1.3;color:#F3EDE2">Discipline outlives motivation.</div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><div style="height:1px;flex:1;background:rgba(243,237,226,.25);margin-right:14px"></div><div style="color:#8E8399;font-size:12.5px">@stoic.hindi</div></div>
+          </div>
+          <div style="position:absolute;top:26px;right:-6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px 14px;font-size:13px;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px"><span style="color:var(--green);font-weight:700">✓</span> Quality gate passed · 9.2/10</div>
+          <div style="position:absolute;bottom:34px;left:-10px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px 14px;font-size:13px;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px"><span style="color:var(--accent)">◉</span> Posted today · 8:00 AM IST</div>
+        </div>
+      </div>
+
+      <div id="how" style="padding:30px 0 66px">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:700;margin-bottom:6px">Six stages. Every day. Every account.</div>
+        <div style="color:var(--muted);font-size:15.5px;margin-bottom:26px">The same pipeline powers the autonomous daily loop and one-click &ldquo;generate now&rdquo;.</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px">
+          <sc-for list="{{ landingStages }}" as="ls" hint-placeholder-count="6">
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 14px;display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.12em">{{ ls.num }}</div>
+              <div style="font-weight:700;font-size:14.5px">{{ ls.name }}</div>
+              <div style="font-size:12.5px;color:var(--muted);line-height:1.45">{{ ls.desc }}</div>
+              <div style="margin-top:auto;font-size:11px;color:var(--muted);background:var(--soft);border-radius:6px;padding:3px 8px;align-self:flex-start;font-weight:600">{{ ls.provider }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div id="features" style="padding:0 0 66px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+        <sc-for list="{{ features }}" as="f" hint-placeholder-count="4">
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:26px;display:flex;flex-direction:column;gap:10px">
+            <div style="width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px">{{ f.icon }}</div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:19px">{{ f.name }}</div>
+            <div style="color:var(--muted);font-size:14.5px;line-height:1.55;text-wrap:pretty">{{ f.desc }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div id="pricing" style="padding:0 0 72px">
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:700;margin-bottom:26px;text-align:center">Simple per-account pricing</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:960px;margin:0 auto">
+          <sc-for list="{{ plans }}" as="pl" hint-placeholder-count="3">
+            <div style="background:var(--surface);border:1.5px solid {{ pl.border }};border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:12px;position:relative">
+              <sc-if value="{{ pl.popular }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:99px">MOST POPULAR</div></sc-if>
+              <div style="font-weight:700;font-size:16px">{{ pl.name }}</div>
+              <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800">{{ pl.price }}</span><span style="color:var(--muted);font-size:14px">/month</span></div>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--muted)">
+                <div>◈ {{ pl.accounts }}</div><div>◈ Daily autonomous posting</div><div>◈ AI quality gate included</div><div>◈ {{ pl.extra }}</div>
+              </div>
+              <div onClick="{{ goLogin }}" style="margin-top:8px;text-align:center;padding:11px;border-radius:10px;cursor:pointer;font-weight:700;font-size:14.5px;background:{{ pl.btnBg }};color:{{ pl.btnColor }};border:1px solid {{ pl.btnBorder }}">Start free trial</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--line);padding:26px 0 34px;display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted)">
+        <div>© 2026 ApanSocial · social.apanjob.com</div>
+        <div style="display:flex;gap:22px"><a href="#" style="color:inherit;text-decoration:none">Privacy Policy</a><a href="#" style="color:inherit;text-decoration:none">Terms of Service</a><a href="#" style="color:inherit;text-decoration:none">Data Deletion</a></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ LOGIN ============ -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Login" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px">
+      <div style="width:400px;display:flex;flex-direction:column;gap:22px;animation:rise .5s ease both">
+        <div style="display:flex;align-items:center;gap:10px;justify-content:center;cursor:pointer" onClick="{{ goLanding }}">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:21px;font-style:italic">&ldquo;</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px">ApanSocial</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:30px;display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)">
+          <div style="text-align:center;display:flex;flex-direction:column;gap:5px">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:23px;font-weight:700">Welcome back</div>
+            <div style="color:var(--muted);font-size:14px">Sign in to manage your accounts</div>
+          </div>
+          <div onClick="{{ goDashboard }}" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:10px;background:#1877F2;color:#fff;font-weight:600;font-size:15px;cursor:pointer"><span style="font-weight:800;font-family:'Bricolage Grotesque',sans-serif">f</span> Continue with Facebook</div>
+          <div style="display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12.5px"><div style="height:1px;flex:1;background:var(--line)"></div>or with email<div style="height:1px;flex:1;background:var(--line)"></div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <input placeholder="you@example.com" style="padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14.5px;font-family:inherit;outline:none">
+            <input placeholder="Password" type="password" style="padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14.5px;font-family:inherit;outline:none">
+          </div>
+          <div onClick="{{ goDashboard }}" style="text-align:center;padding:12px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:15px;cursor:pointer">Sign in</div>
+          <div style="text-align:center;font-size:13.5px;color:var(--muted)">New here? <span style="color:var(--accent);font-weight:600;cursor:pointer">Create an account</span></div>
+        </div>
+        <div style="text-align:center;font-size:12.5px;color:var(--muted);line-height:1.5">Instagram accounts must be Business or Creator,<br>linked to a Facebook Page.</div>
+        <div onClick="{{ goAdmin }}" style="text-align:center;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;opacity:.75">Staff access — admin console</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ APP SHELL ============ -->
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:236px 1fr;min-height:100vh">
+      <div style="border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:9px;padding:4px 10px 18px;cursor:pointer" onClick="{{ goLanding }}">
+          <div style="width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:17px;font-style:italic">&ldquo;</div>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:16.5px">ApanSocial</div>
+        </div>
+        <sc-for list="{{ navItems }}" as="ni" hint-placeholder-count="5">
+          <div onClick="{{ ni.onClick }}" style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14.5px;font-weight:{{ ni.weight }};color:{{ ni.color }};background:{{ ni.bg }}"><span style="width:18px;text-align:center">{{ ni.icon }}</span>{{ ni.label }}</div>
+        </sc-for>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+          <div onClick="{{ toggleTheme }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;color:var(--muted);background:var(--soft)">{{ themeIcon }} {{ themeLabel }}</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px">
+            <div style="width:30px;height:30px;border-radius:99px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">D</div>
+            <div style="display:flex;flex-direction:column"><div style="font-size:13px;font-weight:600">Derik</div><div style="font-size:11.5px;color:var(--muted)">Growth · trialing</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:30px 36px;max-width:1080px;width:100%;box-sizing:border-box;margin:0 auto">
+
+        <!-- DASHBOARD -->
+        <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+          <div data-screen-label="Dashboard" style="display:flex;flex-direction:column;gap:24px;animation:rise .4s ease both">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end">
+              <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:27px;font-weight:700">Good morning, Derik</div>
+              <div style="color:var(--muted);font-size:14.5px;margin-top:3px">Next autonomous run: today · 20:30 IST · @grind.mindset</div></div>
+              <div onClick="{{ goGenerate }}" style="padding:10px 18px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer">✦ Generate now</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <sc-for list="{{ stats }}" as="stt" hint-placeholder-count="4">
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 18px;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:12.5px;color:var(--muted);font-weight:600">{{ stt.label }}</div>
+                  <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">{{ stt.value }}</div>
+                  <div style="font-size:12px;color:{{ stt.subColor }}">{{ stt.sub }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="font-weight:700;font-size:15.5px">Connected accounts</div>
+                <sc-for list="{{ accounts }}" as="ac" hint-placeholder-count="3">
+                  <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 18px;display:flex;align-items:center;gap:14px">
+                    <div style="width:42px;height:42px;border-radius:99px;background:{{ ac.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px">{{ ac.letter }}</div>
+                    <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+                      <div style="font-weight:700;font-size:14.5px">{{ ac.handle }}</div>
+                      <div style="font-size:12.5px;color:var(--muted)">{{ ac.niche }} · posts daily at {{ ac.time }}</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+                      <div style="font-size:11.5px;font-weight:700;color:{{ ac.stColor }};background:{{ ac.stBg }};padding:3px 9px;border-radius:99px">{{ ac.status }}</div>
+                      <div style="font-size:12px;color:var(--muted)">{{ ac.posts }} posts · {{ ac.pass }} gate pass</div>
+                    </div>
+                    <div onClick="{{ ac.onOpen }}" style="padding:7px 14px;border-radius:9px;border:1px solid var(--line);font-size:13px;font-weight:600;cursor:pointer">Open</div>
+                  </div>
+                </sc-for>
+                <div style="border:1.5px dashed var(--line);border-radius:13px;padding:14px;text-align:center;color:var(--muted);font-size:13.5px;cursor:pointer">+ Connect Instagram account</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:14px">
+                <div style="font-weight:700;font-size:15.5px">Recent activity</div>
+                <sc-for list="{{ activity }}" as="av" hint-placeholder-count="5">
+                  <div style="display:flex;gap:11px;align-items:flex-start">
+                    <div style="width:24px;height:24px;border-radius:99px;background:{{ av.bg }};color:{{ av.color }};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px">{{ av.icon }}</div>
+                    <div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:13px;line-height:1.45">{{ av.text }}</div><div style="font-size:11.5px;color:var(--muted)">{{ av.time }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ACCOUNT DETAIL -->
+        <sc-if value="{{ isAccount }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Account detail" style="display:flex;flex-direction:column;gap:22px;animation:rise .4s ease both">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="width:52px;height:52px;border-radius:99px;background:#3D3548;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px">S</div>
+              <div style="flex:1"><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:700">@stoic.hindi</div>
+              <div style="color:var(--muted);font-size:14px">Hindi · Stoicism · 48.2k followers · token healthy</div></div>
+              <div onClick="{{ goGenerate }}" style="padding:9px 16px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:13.5px;cursor:pointer">✦ Generate from this account</div>
+            </div>
+            <div style="display:flex;gap:6px;border-bottom:1px solid var(--line);padding-bottom:0">
+              <sc-for list="{{ accountTabs }}" as="tb" hint-placeholder-count="3">
+                <div onClick="{{ tb.onClick }}" style="padding:9px 16px;font-size:14px;font-weight:{{ tb.weight }};color:{{ tb.color }};cursor:pointer;border-bottom:2px solid {{ tb.border }};margin-bottom:-1px">{{ tb.label }}</div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ tabDna }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:8px">
+                  <div style="font-weight:700;font-size:14px">Persona &amp; voice</div>
+                  <div style="font-size:13.5px;color:var(--muted);line-height:1.55">Calm, older-brother mentor. Short declarative Hindi sentences with one English power-word. Never preachy, never salesy.</div>
+                </div>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:8px">
+                  <div style="font-weight:700;font-size:14px">Audience</div>
+                  <div style="font-size:13.5px;color:var(--muted);line-height:1.55">18–28, Tier-2/3 India, students and first-jobbers chasing self-discipline. Scrolls at night; saves more than likes.</div>
+                </div>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:10px">
+                  <div style="font-weight:700;font-size:14px">Content pillars</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:7px">
+                    <sc-for list="{{ pillars }}" as="pi" hint-placeholder-count="5"><div style="font-size:12.5px;font-weight:600;background:var(--soft);border:1px solid var(--line);border-radius:99px;padding:5px 12px">{{ pi.t }}</div></sc-for>
+                  </div>
+                </div>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:10px">
+                  <div style="font-weight:700;font-size:14px">Visual identity</div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <div style="width:26px;height:26px;border-radius:7px;background:#211C26;border:1px solid var(--line)"></div>
+                    <div style="width:26px;height:26px;border-radius:7px;background:#F3EDE2;border:1px solid var(--line)"></div>
+                    <div style="width:26px;height:26px;border-radius:7px;background:#B7A98F;border:1px solid var(--line)"></div>
+                    <div style="font-size:12.5px;color:var(--muted)">Charcoal · cream · muted gold</div>
+                  </div>
+                  <div style="font-size:13px;color:var(--muted);line-height:1.5">Serif italic headline, centered. Paper-grain texture, thin rule under quote. No faces, no stock photos.</div>
+                </div>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:9px">
+                  <div style="font-weight:700;font-size:14px;color:var(--green)">Do's</div>
+                  <div style="font-size:13.5px;color:var(--muted);line-height:1.7">✓ One idea per post, max 12 words<br>✓ Devanagari primary, English accent word<br>✓ End caption with a question</div>
+                </div>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:9px">
+                  <div style="font-weight:700;font-size:14px;color:var(--red)">Don'ts</div>
+                  <div style="font-size:13.5px;color:var(--muted);line-height:1.7">✕ No hustle-bro clichés or money flexing<br>✕ No religious or political references<br>✕ Never more than 8 hashtags</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ tabPrompts }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="color:var(--muted);font-size:13.5px">Active prompts rotate fairly in the daily loop — least-recently-used first.</div>
+                  <div style="padding:8px 14px;border-radius:9px;border:1px solid var(--line);font-size:13px;font-weight:600;cursor:pointer;background:var(--surface)">+ Add prompt</div>
+                </div>
+                <sc-for list="{{ prompts }}" as="pr" hint-placeholder-count="5">
+                  <div style="background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px">
+                    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:{{ pr.typeColor }};background:{{ pr.typeBg }};padding:4px 9px;border-radius:6px;flex-shrink:0">{{ pr.type }}</div>
+                    <div style="flex:1;font-size:14px;line-height:1.45;color:{{ pr.textColor }}">{{ pr.text }}</div>
+                    <div style="font-size:12px;color:var(--muted);flex-shrink:0;text-align:right">used {{ pr.used }}×<br>{{ pr.last }}</div>
+                    <div onClick="{{ pr.onToggle }}" style="width:38px;height:21px;border-radius:99px;background:{{ pr.tBg }};position:relative;cursor:pointer;flex-shrink:0;transition:background .2s">
+                      <div style="position:absolute;top:2.5px;left:{{ pr.tX }};width:16px;height:16px;border-radius:99px;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ tabSchedule }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:760px">
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="font-weight:700;font-size:14px">Daily posting slots</div>
+                    <div style="font-size:12px;color:var(--muted)">Asia/Kolkata (IST)</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <sc-for list="{{ scheduleSlots }}" as="sl" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <div style="padding:9px 16px;border-radius:9px;border:1px solid var(--line);background:var(--bg);font-size:14.5px;font-weight:700;flex:1">{{ sl.time }}</div>
+                        <div style="font-size:12.5px;color:var(--muted);flex:1.4">{{ sl.note }}</div>
+                        <div onClick="{{ sl.onRemove }}" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--red);font-size:13px">✕</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div onClick="{{ addSlot }}" style="border:1.5px dashed var(--line);border-radius:9px;padding:9px;text-align:center;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer">+ Add time slot</div>
+                  <div style="font-size:12.5px;color:var(--muted)">Each slot publishes one post. Slots are staggered automatically and capped well under Instagram's ~25 posts/24h limit.</div>
+                </div>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:14px">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div><div style="font-weight:700;font-size:14px">Autonomous mode</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">One post per day, zero touch</div></div>
+                    <div onClick="{{ toggleAutonomous }}" style="width:38px;height:21px;border-radius:99px;background:{{ autoBg }};position:relative;cursor:pointer;transition:background .2s"><div style="position:absolute;top:2.5px;left:{{ autoX }};width:16px;height:16px;border-radius:99px;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)"></div></div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div><div style="font-weight:700;font-size:14px">Max regen attempts</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">Before a post is skipped, never forced</div></div>
+                    <div style="padding:7px 14px;border-radius:9px;border:1px solid var(--line);background:var(--bg);font-size:14px;font-weight:700">3</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- GENERATE / PIPELINE -->
+        <sc-if value="{{ isGenerate }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Generate pipeline" style="display:flex;flex-direction:column;gap:22px;animation:rise .4s ease both">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end">
+              <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">Generate now</div>
+              <div style="color:var(--muted);font-size:14px;margin-top:3px">Run the full pipeline on demand — same stages as the daily loop.</div></div>
+              <div onClick="{{ runPipeline }}" style="padding:11px 20px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;opacity:{{ runOpacity }}">{{ runLabel }}</div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 15px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center"><span style="color:var(--muted)">Account</span><span style="font-weight:700">@stoic.hindi ▾</span></div>
+              <div style="flex:2;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 15px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center"><span style="color:var(--muted)">Quote prompt</span><span style="font-weight:700">Stoic take on modern hustle culture ▾</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ stages }}" as="sg" hint-placeholder-count="6">
+                  <div style="background:var(--surface);border:1px solid {{ sg.cardBorder }};border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start">
+                    <div style="width:28px;height:28px;border-radius:99px;background:{{ sg.iconBg }};color:{{ sg.iconColor }};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;animation:{{ sg.anim }}">{{ sg.icon }}</div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+                      <div style="display:flex;align-items:center;gap:9px"><span style="font-weight:700;font-size:14px">{{ sg.name }}</span><span style="font-size:10.5px;font-weight:700;color:var(--muted);background:var(--soft);border-radius:5px;padding:2px 7px;letter-spacing:.05em">{{ sg.provider }}</span></div>
+                      <div style="font-size:12.5px;color:var(--muted)">{{ sg.desc }}</div>
+                      <sc-if value="{{ sg.hasNote }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;font-weight:600;color:{{ sg.noteColor }};margin-top:2px">{{ sg.note }}</div></sc-if>
+                    </div>
+                    <div style="font-size:11.5px;font-weight:700;color:{{ sg.iconColor }};flex-shrink:0">{{ sg.statusLabel }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;position:sticky;top:24px">
+                <div style="font-weight:700;font-size:14.5px">Live preview</div>
+                <sc-if value="{{ noImage }}" hint-placeholder-val="{{ true }}">
+                  <div style="aspect-ratio:4/5;border-radius:13px;border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:20px;box-sizing:border-box">Rendered quote image<br>appears here</div>
+                </sc-if>
+                <sc-if value="{{ showImg1 }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:relative">
+                    <div style="aspect-ratio:4/5;border-radius:13px;background:#211C26;display:flex;flex-direction:column;justify-content:space-between;padding:26px 22px;box-sizing:border-box;filter:saturate(.8)">
+                      <div style="color:#B7A98F;font-size:10px;letter-spacing:.28em;font-weight:600">STOIC HINDI</div>
+                      <div style="font-family:'Instrument Serif',serif;font-style:italic;font-size:24px;line-height:1.3;color:#F3EDE2">Disipline outlives motivation.</div>
+                      <div style="color:#8E8399;font-size:11px">@stoic.hindi</div>
+                    </div>
+                    <div style="position:absolute;inset:0;border-radius:13px;border:2px solid var(--red);display:flex;align-items:flex-end;padding:12px;box-sizing:border-box"><div style="background:var(--red);color:#fff;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:7px">✕ Attempt 1 — text mismatch (&ldquo;Disipline&rdquo;)</div></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ showImg2 }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:relative">
+                    <div style="aspect-ratio:4/5;border-radius:13px;background:#211C26;display:flex;flex-direction:column;justify-content:space-between;padding:26px 22px;box-sizing:border-box;box-shadow:var(--shadow)">
+                      <div style="color:#B7A98F;font-size:10px;letter-spacing:.28em;font-weight:600">STOIC HINDI</div>
+                      <div style="font-family:'Instrument Serif',serif;font-style:italic;font-size:24px;line-height:1.3;color:#F3EDE2">Discipline outlives motivation.</div>
+                      <div style="display:flex;justify-content:space-between;align-items:center"><div style="height:1px;flex:1;background:rgba(243,237,226,.25);margin-right:10px"></div><div style="color:#8E8399;font-size:11px">@stoic.hindi</div></div>
+                    </div>
+                    <sc-if value="{{ genDone }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:10px;right:10px;background:var(--green);color:#fff;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:7px">✓ Published</div></sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ genDone }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px">
+                    <div style="font-size:13px;line-height:1.5">अनुशासन तब भी चलता है जब motivation छोड़ देता है। आज आपने कौन-सा वादा निभाया? 👇</div>
+                    <div style="font-size:12px;color:var(--accent);line-height:1.5">#anushasan #stoicism #hindimotivation #selfdiscipline #mindset</div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- CAMPAIGNS -->
+        <sc-if value="{{ isCampaigns }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Campaigns" style="display:flex;flex-direction:column;gap:22px;animation:rise .4s ease both">
+
+            <sc-if value="{{ campList }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-end">
+                <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">Campaigns</div>
+                <div style="color:var(--muted);font-size:14px;margin-top:3px">Themed runs of posts with their own prompt, cadence and reference imagery.</div></div>
+                <div onClick="{{ campNew }}" style="padding:10px 18px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer">＋ New campaign</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+                <sc-for list="{{ campaigns }}" as="cp" hint-placeholder-count="2">
+                  <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <div style="font-weight:700;font-size:16px">{{ cp.name }}</div>
+                      <div style="font-size:11px;font-weight:700;color:{{ cp.stColor }};background:{{ cp.stBg }};padding:3px 10px;border-radius:99px">{{ cp.status }}</div>
+                    </div>
+                    <div style="font-size:13.5px;color:var(--muted);line-height:1.5">{{ cp.topic }}</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <div style="font-size:12px;font-weight:600;background:var(--soft);border-radius:99px;padding:4px 11px">{{ cp.perDay }} posts/day</div>
+                      <div style="font-size:12px;font-weight:600;background:var(--soft);border-radius:99px;padding:4px 11px">{{ cp.days }}</div>
+                      <div style="font-size:12px;font-weight:600;background:var(--soft);border-radius:99px;padding:4px 11px">{{ cp.refs }} reference images</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)"><span>{{ cp.progress }}</span><span>{{ cp.pct }}</span></div>
+                      <div style="height:6px;border-radius:99px;background:var(--soft);overflow:hidden"><div style="height:100%;width:{{ cp.w }};background:var(--accent);border-radius:99px"></div></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ camp1 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.1em">NEW CAMPAIGN · STEP 1 OF 3</div>
+                <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:25px;font-weight:700">A few questions before we generate</div>
+                <div style="color:var(--muted);font-size:14px">Your answers become the campaign prompt every post is generated from.</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:20px;max-width:720px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div style="display:flex;flex-direction:column;gap:7px">
+                    <div style="font-weight:700;font-size:13.5px">Campaign name</div>
+                    <input placeholder="e.g. Monsoon Discipline" onChange="{{ onCampName }}" style="padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-family:inherit;outline:none">
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:7px">
+                    <div style="font-weight:700;font-size:13.5px">Topic / theme</div>
+                    <input placeholder="e.g. Discipline during exam season" onChange="{{ onCampTopic }}" style="padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-family:inherit;outline:none">
+                  </div>
+                </div>
+                <sc-for list="{{ campQuestions }}" as="cq" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:9px">
+                    <div style="font-weight:700;font-size:13.5px">{{ cq.q }}</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <sc-for list="{{ cq.opts }}" as="op" hint-placeholder-count="3">
+                        <div onClick="{{ op.onClick }}" style="padding:8px 16px;border-radius:99px;cursor:pointer;font-size:13.5px;font-weight:{{ op.weight }};color:{{ op.color }};background:{{ op.bg }};border:1.5px solid {{ op.border }}">{{ op.label }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:18px">
+                  <div onClick="{{ campCancel }}" style="padding:10px 18px;border-radius:10px;border:1px solid var(--line);font-weight:600;font-size:14px;cursor:pointer">Cancel</div>
+                  <div onClick="{{ campNext2 }}" style="padding:10px 18px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer">Next: reference images →</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ camp2 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.1em">NEW CAMPAIGN · STEP 2 OF 3</div>
+                <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:25px;font-weight:700">Reference images</div>
+                <div style="color:var(--muted);font-size:14px;max-width:600px;text-wrap:pretty">Drop 1–3 images that show the look you want — palette, texture, composition. They guide Gemini's art direction for every post in this campaign.</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:720px">
+                <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="camp-ref-1" shape="rounded" radius="14" placeholder="Reference 1 — palette" hint-size="100%,220px" style="width:100%;height:220px"></x-import>
+                <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="camp-ref-2" shape="rounded" radius="14" placeholder="Reference 2 — texture" hint-size="100%,220px" style="width:100%;height:220px"></x-import>
+                <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="camp-ref-3" shape="rounded" radius="14" placeholder="Reference 3 — layout" hint-size="100%,220px" style="width:100%;height:220px"></x-import>
+              </div>
+              <div style="display:flex;justify-content:space-between;max-width:720px">
+                <div onClick="{{ campBack1 }}" style="padding:10px 18px;border-radius:10px;border:1px solid var(--line);font-weight:600;font-size:14px;cursor:pointer">← Back</div>
+                <div onClick="{{ campNext3 }}" style="padding:10px 18px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer">Next: campaign prompt →</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ camp3 }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.1em">NEW CAMPAIGN · STEP 3 OF 3</div>
+                <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:25px;font-weight:700">Your campaign prompt</div>
+                <div style="color:var(--muted);font-size:14px">Compiled from your answers. Edit anything before the campaign starts generating.</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px;max-width:720px">
+                <div style="background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:18px;font-size:14px;line-height:1.7;color:var(--ink)">{{ campPrompt }}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <div style="font-size:12px;font-weight:600;background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:4px 11px">{{ campTotal }} posts total</div>
+                  <div style="font-size:12px;font-weight:600;background:var(--soft);border-radius:99px;padding:4px 11px">Quality gate on every post</div>
+                  <div style="font-size:12px;font-weight:600;background:var(--soft);border-radius:99px;padding:4px 11px">Uses account DNA do's/don'ts</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:18px">
+                  <div onClick="{{ campBack2 }}" style="padding:10px 18px;border-radius:10px;border:1px solid var(--line);font-weight:600;font-size:14px;cursor:pointer">← Back</div>
+                  <div onClick="{{ campCreate }}" style="padding:10px 18px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer">✦ Create campaign &amp; start generating</div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- POSTS & ANALYTICS -->
+        <sc-if value="{{ isPosts }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Posts and analytics" style="display:flex;flex-direction:column;gap:24px;animation:rise .4s ease both">
+            <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">Posts &amp; analytics</div>
+            <div style="color:var(--muted);font-size:14px;margin-top:3px">@stoic.hindi · insights pulled daily, top themes feed back into idea discovery</div></div>
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;align-items:start">
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:14.5px">Reach — last 7 days</div><div style="font-size:12.5px;color:var(--green);font-weight:700">▲ 18% vs prev week</div></div>
+                <div style="display:flex;gap:10px;align-items:flex-end;height:130px">
+                  <sc-for list="{{ bars }}" as="br" hint-placeholder-count="7">
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end">
+                      <div style="width:100%;height:{{ br.h }};background:{{ br.bg }};border-radius:6px 6px 3px 3px"></div>
+                      <div style="font-size:11px;color:var(--muted)">{{ br.d }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-weight:700;font-size:14.5px">Top themes this month</div>
+                <sc-for list="{{ themes }}" as="th" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px"><span>{{ th.name }}</span><span style="font-weight:700;color:var(--green)">{{ th.score }}</span></div>
+                </sc-for>
+                <div style="font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;line-height:1.5">Winning themes get priority in tomorrow's idea discovery.</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+              <sc-for list="{{ posts }}" as="po" hint-placeholder-count="6">
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column">
+                  <div style="aspect-ratio:1;background:#211C26;display:flex;flex-direction:column;justify-content:space-between;padding:20px;box-sizing:border-box">
+                    <div style="color:#B7A98F;font-size:9px;letter-spacing:.28em;font-weight:600">STOIC HINDI</div>
+                    <div style="font-family:'Instrument Serif',serif;font-style:italic;font-size:19px;line-height:1.3;color:#F3EDE2">{{ po.q }}</div>
+                    <div style="color:#8E8399;font-size:10px">@stoic.hindi</div>
+                  </div>
+                  <div style="padding:13px 15px;display:flex;flex-direction:column;gap:8px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <div style="font-size:11px;font-weight:700;color:{{ po.stColor }};background:{{ po.stBg }};padding:3px 9px;border-radius:99px">{{ po.status }}</div>
+                      <div style="font-size:11.5px;color:var(--muted)">{{ po.time }}</div>
+                    </div>
+                    <div style="display:flex;gap:12px;font-size:12px;color:var(--muted)"><span>♥ {{ po.likes }}</span><span>◉ {{ po.reach }}</span><span>▣ {{ po.saves }}</span></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- BILLING -->
+        <sc-if value="{{ isBilling }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Billing" style="display:flex;flex-direction:column;gap:24px;animation:rise .4s ease both">
+            <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">Billing</div>
+            <div style="color:var(--muted);font-size:14px;margin-top:3px">The daily scheduler only runs while your subscription is active or trialing.</div></div>
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;align-items:center;gap:16px">
+              <div style="flex:1"><div style="font-weight:700;font-size:15.5px">Growth plan — <span style="color:var(--amber)">trialing</span></div>
+              <div style="font-size:13.5px;color:var(--muted);margin-top:3px">Trial ends July 12, 2026 · then $49/month · 3 of 5 accounts used</div></div>
+              <div style="padding:9px 16px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;font-weight:600;cursor:pointer">Manage in Stripe</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+              <sc-for list="{{ plans }}" as="pl2" hint-placeholder-count="3">
+                <div style="background:var(--surface);border:1.5px solid {{ pl2.border }};border-radius:15px;padding:22px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700;font-size:15px">{{ pl2.name }}</div>
+                  <sc-if value="{{ pl2.popular }}" hint-placeholder-val="{{ false }}"><div style="font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 9px;border-radius:99px">CURRENT</div></sc-if></div>
+                  <div style="display:flex;align-items:baseline;gap:5px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:800">{{ pl2.price }}</span><span style="color:var(--muted);font-size:13px">/mo</span></div>
+                  <div style="font-size:13.5px;color:var(--muted)">{{ pl2.accounts }} · {{ pl2.extra }}</div>
+                  <div style="margin-top:auto;text-align:center;padding:10px;border-radius:9px;cursor:pointer;font-weight:700;font-size:13.5px;background:{{ pl2.btnBg }};color:{{ pl2.btnColor }};border:1px solid {{ pl2.btnBorder }}">{{ pl2.cta }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;overflow:hidden">
+              <div style="padding:15px 20px;font-weight:700;font-size:14.5px;border-bottom:1px solid var(--line)">Invoices</div>
+              <sc-for list="{{ invoices }}" as="iv" hint-placeholder-count="3">
+                <div style="padding:13px 20px;display:flex;justify-content:space-between;align-items:center;font-size:13.5px;border-bottom:1px solid var(--line)">
+                  <span>{{ iv.date }}</span><span style="color:var(--muted)">{{ iv.desc }}</span><span style="font-weight:700">{{ iv.amount }}</span><span style="color:var(--green);font-weight:600">{{ iv.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ ADMIN PANEL ============ -->
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:236px 1fr;min-height:100vh">
+      <div style="border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;box-sizing:border-box;background:var(--surface)">
+        <div style="display:flex;align-items:center;gap:9px;padding:4px 10px 18px">
+          <div style="width:28px;height:28px;border-radius:8px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:14px">⚙</div>
+          <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15.5px">ApanSocial</div><div style="font-size:10.5px;color:var(--accent);font-weight:700;letter-spacing:.12em">ADMIN</div></div>
+        </div>
+        <sc-for list="{{ adminNav }}" as="an" hint-placeholder-count="4">
+          <div onClick="{{ an.onClick }}" style="display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14.5px;font-weight:{{ an.weight }};color:{{ an.color }};background:{{ an.bg }}"><span style="width:18px;text-align:center">{{ an.icon }}</span>{{ an.label }}</div>
+        </sc-for>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+          <div onClick="{{ toggleTheme }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;color:var(--muted);background:var(--soft)">{{ themeIcon }} {{ themeLabel }}</div>
+          <div onClick="{{ goDashboard }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13.5px;color:var(--muted);border:1px solid var(--line)">← Exit admin</div>
+        </div>
+      </div>
+      <div style="padding:30px 36px;max-width:1080px;width:100%;box-sizing:border-box;margin:0 auto">
+
+        <sc-if value="{{ adOverview }}" hint-placeholder-val="{{ true }}">
+          <div data-screen-label="Admin overview" style="display:flex;flex-direction:column;gap:24px;animation:rise .4s ease both">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">Platform overview</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+              <sc-for list="{{ adminStats }}" as="ast" hint-placeholder-count="4">
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 18px;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:12.5px;color:var(--muted);font-weight:600">{{ ast.label }}</div>
+                  <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">{{ ast.value }}</div>
+                  <div style="font-size:12px;color:{{ ast.subColor }}">{{ ast.sub }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-weight:700;font-size:14.5px">Today's pipeline health</div>
+                <sc-for list="{{ health }}" as="he" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:5px">
+                    <div style="display:flex;justify-content:space-between;font-size:13px"><span>{{ he.name }}</span><span style="font-weight:700;color:{{ he.color }}">{{ he.value }}</span></div>
+                    <div style="height:6px;border-radius:99px;background:var(--soft);overflow:hidden"><div style="height:100%;width:{{ he.w }};background:{{ he.color }};border-radius:99px"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-weight:700;font-size:14.5px">Recent signups</div>
+                <sc-for list="{{ signups }}" as="su" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px">
+                    <div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:99px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--muted)">{{ su.letter }}</div>{{ su.email }}</div>
+                    <span style="color:var(--muted);font-size:12.5px">{{ su.when }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ adUsers }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Admin users" style="display:flex;flex-direction:column;gap:20px;animation:rise .4s ease both">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">Users</div>
+              <input placeholder="Search email or handle…" style="padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13.5px;font-family:inherit;outline:none;width:260px">
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.4fr;padding:12px 20px;font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;border-bottom:1px solid var(--line)">
+                <div>USER</div><div>PLAN</div><div>STATUS</div><div>ACCOUNTS</div><div>ACTIONS</div>
+              </div>
+              <sc-for list="{{ users }}" as="us" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.4fr;padding:13px 20px;font-size:13.5px;border-bottom:1px solid var(--line);align-items:center">
+                  <div style="font-weight:600">{{ us.email }}</div>
+                  <div style="color:var(--muted)">{{ us.plan }}</div>
+                  <div><span style="font-size:11px;font-weight:700;color:{{ us.stColor }};background:{{ us.stBg }};padding:3px 9px;border-radius:99px">{{ us.status }}</span></div>
+                  <div style="color:var(--muted)">{{ us.accounts }}</div>
+                  <div style="display:flex;gap:8px"><span style="font-size:12px;font-weight:600;color:var(--accent);cursor:pointer">Impersonate</span><span style="font-size:12px;font-weight:600;color:var(--red);cursor:pointer">Suspend</span></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ adJobs }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Admin jobs log" style="display:flex;flex-direction:column;gap:20px;animation:rise .4s ease both">
+            <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">Jobs log</div>
+            <div style="color:var(--muted);font-size:14px;margin-top:3px">Every stage outcome across all tenants. Idempotent daily runs — re-runs never double-post.</div></div>
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:1fr 1.4fr 1.2fr .9fr 2fr;padding:12px 20px;font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;border-bottom:1px solid var(--line)">
+                <div>TIME</div><div>ACCOUNT</div><div>STAGE</div><div>STATUS</div><div>MESSAGE</div>
+              </div>
+              <sc-for list="{{ jobs }}" as="jb" hint-placeholder-count="7">
+                <div style="display:grid;grid-template-columns:1fr 1.4fr 1.2fr .9fr 2fr;padding:12px 20px;font-size:13px;border-bottom:1px solid var(--line);align-items:center">
+                  <div style="color:var(--muted)">{{ jb.time }}</div>
+                  <div style="font-weight:600">{{ jb.account }}</div>
+                  <div style="color:var(--muted)">{{ jb.stage }}</div>
+                  <div><span style="font-size:11px;font-weight:700;color:{{ jb.stColor }};background:{{ jb.stBg }};padding:3px 9px;border-radius:99px">{{ jb.status }}</span></div>
+                  <div style="color:var(--muted);font-size:12.5px">{{ jb.msg }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ adSystem }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Admin system" style="display:flex;flex-direction:column;gap:20px;animation:rise .4s ease both">
+            <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:700">System</div>
+            <div style="color:var(--muted);font-size:14px;margin-top:3px">Provider health and platform configuration.</div></div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+              <sc-for list="{{ providers }}" as="pv" hint-placeholder-count="5">
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px;display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:13.5px">{{ pv.name }}</span><span style="width:8px;height:8px;border-radius:99px;background:{{ pv.dot }}"></span></div>
+                  <div style="font-size:11.5px;color:var(--muted)">{{ pv.role }}</div>
+                  <div style="font-size:11.5px;font-weight:600;color:{{ pv.stColor }}">{{ pv.status }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:14px">
+                <div style="font-weight:700;font-size:14.5px">Configuration</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px"><span>MAX_REGEN_ATTEMPTS</span><span style="font-weight:700;background:var(--soft);padding:4px 12px;border-radius:7px">3</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px"><span>Posts per account / 24h cap</span><span style="font-weight:700;background:var(--soft);padding:4px 12px;border-radius:7px">25</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px"><span>Token refresh window</span><span style="font-weight:700;background:var(--soft);padding:4px 12px;border-radius:7px">7 days</span></div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;display:flex;flex-direction:column;gap:12px">
+                <div style="font-weight:700;font-size:14.5px">Meta App Review</div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.55">App is in <b style="color:var(--amber)">dev mode</b> — only owner + testers can post. Advanced Access pending for <b>instagram_content_publish</b>.</div>
+                <div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
+                  <div style="color:var(--green)">✓ Privacy, Terms, Data-deletion URLs live</div>
+                  <div style="color:var(--green)">✓ OAuth redirect verified</div>
+                  <div style="color:var(--amber)">◌ Business verification in progress</div>
+                  <div style="color:var(--muted)">○ Screencast for reviewers — todo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#D94F72&quot;,&quot;#5B5BD6&quot;,&quot;#1F8A5B&quot;,&quot;#C77229&quot;],&quot;default&quot;:&quot;#D94F72&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;landing&quot;,&quot;login&quot;,&quot;app&quot;,&quot;admin&quot;],&quot;default&quot;:&quot;landing&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: null, theme: null, view: 'dashboard', accountTab: 'dna',
+    adminView: 'overview', tick: -1, autonomous: true,
+    promptsOn: { p1: true, p2: true, p3: false, p4: true, p5: true },
+    slots: ['08:00', '13:30', '20:30'],
+    campStep: 0,
+    camp: { name: '', topic: '', goal: 'Engagement & saves', tone: 'Calm & wise', perDay: '2', days: '14 days' },
+    campaigns: [
+      { name: 'Monsoon Discipline', topic: 'Daily discipline for students during exam season', status: 'Active', perDay: '2', days: '14 days', refs: 3, progress: '9 / 28 posts published', pct: '32%', w: '32%' },
+      { name: 'Money Stoicism', topic: 'Contrarian money truths, calm wealth mindset', status: 'Draft', perDay: '1', days: '7 days', refs: 2, progress: '0 / 7 posts published', pct: '0%', w: '0%' }
+    ]
+  };
+  componentWillUnmount() { clearInterval(this._t); }
+  runPipeline = () => {
+    if (this.state.tick >= 0 && this.state.tick < 8) return;
+    clearInterval(this._t);
+    this.setState({ tick: 0 });
+    this._t = setInterval(() => {
+      this.setState(s => {
+        if (s.tick >= 8) { clearInterval(this._t); return null; }
+        return { tick: s.tick + 1 };
+      });
+    }, 1300);
+  };
+  renderVals() {
+    const S = this.state, P = this.props;
+    const theme = S.theme ?? P.defaultTheme ?? 'light';
+    const screen = S.screen ?? P.startScreen ?? 'landing';
+    const accent = P.accent ?? (theme === 'light' ? '#D94F72' : '#F06E92');
+    const go = (o) => () => this.setState(o);
+
+    // ---- pipeline stage machine ----
+    const t = S.tick;
+    const s0 = t === 0 ? 'running' : t > 0 ? 'done' : 'pending';
+    const s1 = t === 1 ? 'running' : t > 1 ? 'done' : 'pending';
+    const s2 = (t === 2 || t === 4) ? 'running' : (t === 3 || t >= 5) ? 'done' : 'pending';
+    const s3 = (t === 3 || t === 5) ? 'running' : t === 4 ? 'failed' : t >= 6 ? 'done' : 'pending';
+    const s4 = t === 7 ? 'running' : t >= 8 ? 'done' : 'pending';
+    const s5 = t >= 8 ? 'done' : 'pending';
+    const vis = {
+      pending: { icon: '○', iconColor: 'var(--muted)', iconBg: 'var(--soft)', cardBorder: 'var(--line)', statusLabel: 'WAITING', anim: 'none', noteColor: 'var(--muted)' },
+      running: { icon: '◌', iconColor: 'var(--amber)', iconBg: 'var(--amber-soft)', cardBorder: 'var(--amber)', statusLabel: 'RUNNING', anim: 'spin 1s linear infinite', noteColor: 'var(--amber)' },
+      done: { icon: '✓', iconColor: 'var(--green)', iconBg: 'var(--green-soft)', cardBorder: 'var(--line)', statusLabel: 'DONE', anim: 'none', noteColor: 'var(--green)' },
+      failed: { icon: '✕', iconColor: 'var(--red)', iconBg: 'var(--red-soft)', cardBorder: 'var(--red)', statusLabel: 'BLOCKED', anim: 'none', noteColor: 'var(--red)' }
+    };
+    const mkStage = (name, provider, desc, status, note) =>
+      ({ name, provider, desc, note: note || '', hasNote: !!note, ...vis[status] });
+    const stages = [
+      mkStage('Idea discovery', 'DEEPSEEK', 'Fresh idea from account DNA + rotated prompt, de-duped by hash', s0,
+        t >= 1 ? '“Discipline outlives motivation” — no hash collision' : ''),
+      mkStage('Content generation', 'DEEPSEEK', 'Strict JSON: headline, lines, caption, hashtags', s1,
+        t >= 2 ? 'JSON valid · DNA do\u2019s/don\u2019ts enforced' : ''),
+      mkStage('Image generation', 'GEMINI', 'Quote rendered into artwork per visual identity', s2,
+        t >= 4 ? 'Attempt 2 of 3' : t >= 2 ? 'Attempt 1 of 3' : ''),
+      mkStage('Quality gate', 'GEMINI VISION', 'Text fidelity · legibility · on-DNA · safety', s3,
+        t === 4 ? 'Score 6.1 — headline text mismatch → regenerating' : t >= 6 ? 'Score 9.2 — pass' : t === 3 || t === 5 ? 'Reading rendered image back…' : ''),
+      mkStage('Publish', 'INSTAGRAM GRAPH', 'Create media container → publish · ≤25 posts/24h', s4,
+        t >= 8 ? 'Live · media ID 17984…203' : ''),
+      mkStage('Analytics pull', 'SCHEDULER', 'Insights in 24h feed back into idea discovery', s5,
+        t >= 8 ? 'Scheduled tomorrow 08:10 IST' : '')
+    ];
+    const running = t >= 0 && t < 8;
+
+    // ---- nav ----
+    const navDefs = [
+      { label: 'Dashboard', icon: '▦', view: 'dashboard' },
+      { label: 'Accounts', icon: '◎', view: 'account' },
+      { label: 'Generate', icon: '✦', view: 'generate' },
+      { label: 'Campaigns', icon: '▩', view: 'campaigns' },
+      { label: 'Posts & analytics', icon: '▤', view: 'posts' },
+      { label: 'Billing', icon: '▧', view: 'billing' }
+    ];
+    const navItems = navDefs.map(n => ({
+      ...n,
+      onClick: go({ view: n.view }),
+      color: S.view === n.view ? 'var(--ink)' : 'var(--muted)',
+      bg: S.view === n.view ? 'var(--soft)' : 'transparent',
+      weight: S.view === n.view ? 700 : 500
+    }));
+    const adminDefs = [
+      { label: 'Overview', icon: '▦', v: 'overview' },
+      { label: 'Users', icon: '◎', v: 'users' },
+      { label: 'Jobs log', icon: '≡', v: 'jobs' },
+      { label: 'System', icon: '⚙', v: 'system' }
+    ];
+    const adminNav = adminDefs.map(n => ({
+      ...n,
+      onClick: go({ adminView: n.v }),
+      color: S.adminView === n.v ? 'var(--ink)' : 'var(--muted)',
+      bg: S.adminView === n.v ? 'var(--soft)' : 'transparent',
+      weight: S.adminView === n.v ? 700 : 500
+    }));
+    const accountTabs = ['dna', 'prompts', 'schedule'].map((k, i) => ({
+      label: ['Account DNA', 'Prompt library', 'Schedule'][i],
+      onClick: go({ accountTab: k }),
+      color: S.accountTab === k ? 'var(--ink)' : 'var(--muted)',
+      border: S.accountTab === k ? 'var(--accent)' : 'transparent',
+      weight: S.accountTab === k ? 700 : 500
+    }));
+
+    // ---- data ----
+    const stBadge = (kind) => kind === 'ok'
+      ? { stColor: 'var(--green)', stBg: 'var(--green-soft)' }
+      : kind === 'warn' ? { stColor: 'var(--amber)', stBg: 'var(--amber-soft)' }
+      : { stColor: 'var(--red)', stBg: 'var(--red-soft)' };
+    const accounts = [
+      { letter: 'S', avatarBg: '#3D3548', handle: '@stoic.hindi', niche: 'Hindi · Stoicism', time: '08:00 IST', posts: 214, pass: '96%', status: 'Active', ...stBadge('ok'), onOpen: go({ view: 'account', accountTab: 'dna' }) },
+      { letter: 'G', avatarBg: '#2E4B3F', handle: '@grind.mindset', niche: 'English · Business mindset', time: '20:30 IST', posts: 167, pass: '91%', status: 'Active', ...stBadge('ok'), onOpen: go({ view: 'account', accountTab: 'dna' }) },
+      { letter: 'श', avatarBg: '#5A4632', handle: '@shayari.soul', niche: 'Urdu · Shayari', time: '07:30 IST', posts: 88, pass: '94%', status: 'Token expires 6d', ...stBadge('warn'), onOpen: go({ view: 'account', accountTab: 'dna' }) }
+    ];
+    const stats = [
+      { label: 'Accounts connected', value: '3', sub: '2 of 5 slots free', subColor: 'var(--muted)' },
+      { label: 'Posts this week', value: '21', sub: 'all autonomous', subColor: 'var(--green)' },
+      { label: 'Gate pass rate', value: '94%', sub: '▲ 2% vs last week', subColor: 'var(--green)' },
+      { label: 'Blocked & skipped', value: '2', sub: 'never published on fail', subColor: 'var(--muted)' }
+    ];
+    const activity = [
+      { icon: '✓', color: 'var(--green)', bg: 'var(--green-soft)', text: 'Published to @stoic.hindi — gate score 9.2', time: 'Today · 08:00' },
+      { icon: '↻', color: 'var(--amber)', bg: 'var(--amber-soft)', text: 'Gate blocked attempt 1 for @grind.mindset (text mismatch) — regenerated, passed 8.8', time: 'Yesterday · 20:31' },
+      { icon: '✕', color: 'var(--red)', bg: 'var(--red-soft)', text: 'Post skipped for @shayari.soul after 3 failed attempts — logged & notified', time: 'Jul 2 · 07:34' },
+      { icon: '▤', color: 'var(--muted)', bg: 'var(--soft)', text: 'Analytics pulled for 3 accounts — “consistency” theme trending', time: 'Jul 2 · 08:10' },
+      { icon: '⚿', color: 'var(--amber)', bg: 'var(--amber-soft)', text: 'Long-lived token for @shayari.soul refreshes in 6 days', time: 'Jul 1 · 09:00' }
+    ];
+    const pillars = ['Discipline', 'Consistency', 'Detachment', 'Focus', 'Modern stoicism'].map(x => ({ t: x }));
+    const promptDefs = [
+      { id: 'p1', type: 'QUOTE IDEA', text: 'Stoic take on modern hustle culture, one sharp sentence', used: 38, last: 'used today' },
+      { id: 'p2', type: 'QUOTE IDEA', text: 'Marcus Aurelius reframed for Indian students, in Hindi', used: 22, last: 'yesterday' },
+      { id: 'p3', type: 'QUOTE IDEA', text: 'Contrarian money truths, no clichés', used: 9, last: 'Jun 24' },
+      { id: 'p4', type: 'IMAGE IDEA', text: 'Charcoal paper texture, cream serif, thin gold rule under quote', used: 51, last: 'used today' },
+      { id: 'p5', type: 'IMAGE IDEA', text: 'Minimal night-sky gradient, centered text, tiny star field', used: 12, last: 'Jun 30' }
+    ];
+    const prompts = promptDefs.map(p => {
+      const on = S.promptsOn[p.id];
+      return {
+        ...p,
+        typeColor: p.type === 'QUOTE IDEA' ? 'var(--accent)' : 'var(--green)',
+        typeBg: p.type === 'QUOTE IDEA' ? 'var(--accent-soft)' : 'var(--green-soft)',
+        textColor: on ? 'var(--ink)' : 'var(--muted)',
+        tBg: on ? 'var(--green)' : 'var(--line)',
+        tX: on ? '19px' : '2.5px',
+        onToggle: () => this.setState(s => ({ promptsOn: { ...s.promptsOn, [p.id]: !s.promptsOn[p.id] } }))
+      };
+    });
+    const posts = [
+      { q: 'Discipline outlives motivation.', status: 'Published', time: 'Today 08:00', likes: '2.4k', reach: '31k', saves: '412', ...stBadge('ok') },
+      { q: 'Silence is a full-time job.', status: 'Published', time: 'Yesterday', likes: '1.9k', reach: '24k', saves: '355', ...stBadge('ok') },
+      { q: 'Comfort is a slow thief.', status: 'Queued', time: 'Tomorrow 08:00', likes: '—', reach: '—', saves: '—', ...stBadge('warn') },
+      { q: 'You are what you repeat.', status: 'Published', time: 'Jul 3', likes: '3.1k', reach: '42k', saves: '689', ...stBadge('ok') },
+      { q: 'Focus is saying no daily.', status: 'Skipped by gate', time: 'Jul 2', likes: '—', reach: '—', saves: '—', ...stBadge('bad') },
+      { q: 'Slow mornings, sharp mind.', status: 'Published', time: 'Jul 1', likes: '1.6k', reach: '19k', saves: '240', ...stBadge('ok') }
+    ];
+    const bars = [62, 48, 71, 55, 90, 76, 100].map((v, i) => ({
+      h: Math.round(v) + '%', d: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+      bg: i === 6 ? 'var(--accent)' : 'var(--accent-soft)'
+    }));
+    const themes = [
+      { name: 'Consistency & habits', score: '+34% saves' },
+      { name: 'Detachment', score: '+21% reach' },
+      { name: 'Morning discipline', score: '+18% saves' },
+      { name: 'Money stoicism', score: '+6% reach' }
+    ];
+    const plans = [
+      { name: 'Starter', price: '$19', accounts: '1 account', extra: 'Email support', popular: false, cta: 'Downgrade' },
+      { name: 'Growth', price: '$49', accounts: '5 accounts', extra: 'Analytics feedback loop', popular: true, cta: 'Current plan' },
+      { name: 'Agency', price: '$129', accounts: '20 accounts', extra: 'Priority support · API access', popular: false, cta: 'Upgrade' }
+    ].map(p => ({
+      ...p,
+      border: p.popular ? 'var(--accent)' : 'var(--line)',
+      btnBg: p.popular ? 'var(--accent)' : 'var(--surface)',
+      btnColor: p.popular ? '#fff' : 'var(--ink)',
+      btnBorder: p.popular ? 'var(--accent)' : 'var(--line)'
+    }));
+    const invoices = [
+      { date: 'Jul 1, 2026', desc: 'Growth plan — trial period', amount: '$0.00', status: 'Paid' },
+      { date: 'Jun 1, 2026', desc: 'Growth plan — monthly', amount: '$49.00', status: 'Paid' },
+      { date: 'May 1, 2026', desc: 'Starter plan — monthly', amount: '$19.00', status: 'Paid' }
+    ];
+    const landingStages = [
+      { num: 'STAGE 1', name: 'Idea discovery', desc: 'A fresh idea from your account DNA, never repeated', provider: 'DeepSeek' },
+      { num: 'STAGE 2', name: 'Quote & caption', desc: 'Headline, lines, caption and hashtags in your voice', provider: 'DeepSeek' },
+      { num: 'STAGE 3', name: 'Image generation', desc: 'Quote baked into artwork matching your visual identity', provider: 'Gemini' },
+      { num: 'STAGE 4', name: 'Quality gate', desc: 'AI reads the image back — bad posts are blocked, never published', provider: 'Gemini Vision' },
+      { num: 'STAGE 5', name: 'Publish', desc: 'Posted at your time, in your timezone, via official API', provider: 'Instagram Graph' },
+      { num: 'STAGE 6', name: 'Learn', desc: 'Insights feed winning themes back into tomorrow\u2019s ideas', provider: 'Analytics' }
+    ];
+    const features = [
+      { icon: '◈', name: 'Account DNA', desc: 'Persona, audience, pillars, visual identity, do\u2019s and don\u2019ts — every generation is conditioned on your account\u2019s DNA, so posts sound like you, not a bot.' },
+      { icon: '✎', name: 'Your prompt library', desc: 'Reusable quote and image prompts you control. Enable, disable, and let the daily loop rotate them fairly — least-recently-used first.' },
+      { icon: '⛨', name: 'Fail-closed quality gate', desc: 'AI vision re-reads every rendered image for text fidelity, legibility and safety. Fails regenerate up to 3×; still failing means skip — never a bad post live.' },
+      { icon: '↺', name: 'Analytics that feed back', desc: 'Daily insight pulls surface your top-performing themes and prompts, and tomorrow\u2019s ideas lean into what your audience actually saves.' }
+    ];
+    // ---- admin data ----
+    const adminStats = [
+      { label: 'MRR', value: '$4,320', sub: '▲ 12% this month', subColor: 'var(--green)' },
+      { label: 'Active subscriptions', value: '87', sub: '14 trialing', subColor: 'var(--muted)' },
+      { label: 'Posts published today', value: '212', sub: 'across 241 accounts', subColor: 'var(--muted)' },
+      { label: 'Gate block rate', value: '5.8%', sub: '9 skipped after 3 attempts', subColor: 'var(--amber)' }
+    ];
+    const health = [
+      { name: 'Idea + content (DeepSeek)', value: '99.1% ok', w: '99%', color: 'var(--green)' },
+      { name: 'Image gen (Gemini)', value: '97.4% ok', w: '97%', color: 'var(--green)' },
+      { name: 'Quality gate pass (first try)', value: '86%', w: '86%', color: 'var(--amber)' },
+      { name: 'Publish (Instagram Graph)', value: '99.8% ok', w: '99%', color: 'var(--green)' }
+    ];
+    const signups = [
+      { letter: 'R', email: 'riya@creatorlab.in', when: '2h ago' },
+      { letter: 'M', email: 'marco@quotefeeds.co', when: '6h ago' },
+      { letter: 'A', email: 'aman.gupta@gmail.com', when: 'yesterday' },
+      { letter: 'T', email: 'team@viralpages.io', when: 'yesterday' }
+    ];
+    const users = [
+      { email: 'derik6013@gmail.com', plan: 'Growth', status: 'Trialing', accounts: '3 / 5', ...stBadge('warn') },
+      { email: 'riya@creatorlab.in', plan: 'Agency', status: 'Active', accounts: '14 / 20', ...stBadge('ok') },
+      { email: 'marco@quotefeeds.co', plan: 'Starter', status: 'Active', accounts: '1 / 1', ...stBadge('ok') },
+      { email: 'aman.gupta@gmail.com', plan: 'Growth', status: 'Past due', accounts: '4 / 5', ...stBadge('bad') },
+      { email: 'team@viralpages.io', plan: 'Agency', status: 'Active', accounts: '9 / 20', ...stBadge('ok') }
+    ];
+    const jobs = [
+      { time: '08:00:14', account: '@stoic.hindi', stage: 'publish', status: 'OK', msg: 'container 1798…203 published', ...stBadge('ok') },
+      { time: '08:00:02', account: '@stoic.hindi', stage: 'quality_gate', status: 'PASS', msg: 'score 9.2 · attempt 2', ...stBadge('ok') },
+      { time: '07:59:40', account: '@stoic.hindi', stage: 'quality_gate', status: 'FAIL', msg: 'score 6.1 · headline text mismatch → regen', ...stBadge('bad') },
+      { time: '07:34:11', account: '@shayari.soul', stage: 'pipeline', status: 'SKIP', msg: '3/3 attempts failed — post skipped, user notified', ...stBadge('warn') },
+      { time: '07:30:05', account: '@shayari.soul', stage: 'image_gen', status: 'OK', msg: 'attempt 3 rendered · 1080×1350', ...stBadge('ok') },
+      { time: '06:12:50', account: '@grind.mindset', stage: 'analytics', status: 'OK', msg: '12 posts · insights stored', ...stBadge('ok') },
+      { time: '06:00:00', account: 'scheduler', stage: 'daily_enqueue', status: 'OK', msg: '241 accounts enqueued · idempotency keys set', ...stBadge('ok') }
+    ];
+    const providers = [
+      { name: 'DeepSeek', role: 'LLMProvider — text', status: 'Operational', dot: 'var(--green)', stColor: 'var(--green)' },
+      { name: 'Gemini', role: 'Image + Vision', status: 'Operational', dot: 'var(--green)', stColor: 'var(--green)' },
+      { name: 'Instagram', role: 'Graph publishing', status: 'Operational', dot: 'var(--green)', stColor: 'var(--green)' },
+      { name: 'Stripe', role: 'Billing webhooks', status: 'Operational', dot: 'var(--green)', stColor: 'var(--green)' },
+      { name: 'Redis', role: 'BullMQ queues', status: '82ms latency', dot: 'var(--amber)', stColor: 'var(--amber)' }
+    ];
+
+    // ---- schedule slots ----
+    const slotNotes = ['Morning motivation', 'Midday reach peak', 'Evening save-time'];
+    const scheduleSlots = S.slots.map((time, i) => ({
+      time, note: slotNotes[i % 3],
+      onRemove: () => this.setState(s => ({ slots: s.slots.filter((_, j) => j !== i) }))
+    }));
+    const slotPool = ['10:00', '16:00', '22:00', '06:30'];
+    const addSlot = () => this.setState(s => s.slots.length >= 5 ? null
+      : { slots: [...s.slots, slotPool[s.slots.length % slotPool.length]] });
+
+    // ---- campaigns ----
+    const C = S.camp;
+    const setCamp = (patch) => this.setState(s => ({ camp: { ...s.camp, ...patch } }));
+    const mkOpts = (key, labels) => labels.map(label => {
+      const sel = C[key] === label;
+      return {
+        label,
+        onClick: () => setCamp({ [key]: label }),
+        color: sel ? 'var(--accent)' : 'var(--muted)',
+        bg: sel ? 'var(--accent-soft)' : 'var(--surface)',
+        border: sel ? 'var(--accent)' : 'var(--line)',
+        weight: sel ? 700 : 500
+      };
+    });
+    const campQuestions = [
+      { q: 'What is the goal of this campaign?', opts: mkOpts('goal', ['Follower growth', 'Engagement & saves', 'Traffic & sales']) },
+      { q: 'What tone should the quotes carry?', opts: mkOpts('tone', ['Calm & wise', 'Bold & punchy', 'Poetic']) },
+      { q: 'How many posts per day?', opts: mkOpts('perDay', ['1', '2', '3']) },
+      { q: 'How long should it run?', opts: mkOpts('days', ['7 days', '14 days', '30 days']) }
+    ];
+    const daysNum = parseInt(C.days, 10) || 7;
+    const campTotal = (parseInt(C.perDay, 10) || 1) * daysNum;
+    const campPrompt = 'Campaign “' + (C.name || 'Untitled') + '” for @stoic.hindi — theme: ' +
+      (C.topic || 'account DNA pillars') + '. Goal: ' + C.goal.toLowerCase() + '. Tone: ' +
+      C.tone.toLowerCase() + '. Cadence: ' + C.perDay + ' post(s) per day for ' + C.days +
+      ' at the account’s scheduled slots. Visual direction: follow the attached reference images for palette, texture and composition, blended with the account’s visual identity. Every idea must be de-duplicated against past posts; every image must pass the quality gate (text fidelity, legibility, on-DNA, safety) before publishing — skip, never force.';
+    const campaigns = S.campaigns.map(cp => ({
+      ...cp, ...(cp.status === 'Active' ? stBadge('ok') : stBadge('warn'))
+    }));
+
+    return {
+      theme, accent,
+      scheduleSlots, addSlot,
+      isCampaigns: S.view === 'campaigns',
+      campList: S.campStep === 0, camp1: S.campStep === 1, camp2: S.campStep === 2, camp3: S.campStep === 3,
+      campNew: go({ campStep: 1 }),
+      campCancel: go({ campStep: 0 }),
+      campBack1: go({ campStep: 1 }),
+      campBack2: go({ campStep: 2 }),
+      campNext2: go({ campStep: 2 }),
+      campNext3: go({ campStep: 3 }),
+      onCampName: (e) => setCamp({ name: e.target.value }),
+      onCampTopic: (e) => setCamp({ topic: e.target.value }),
+      campQuestions, campPrompt, campTotal,
+      campaigns,
+      campCreate: () => this.setState(s => ({
+        campStep: 0,
+        campaigns: [{
+          name: s.camp.name || 'Untitled campaign', topic: s.camp.topic || 'From account DNA pillars',
+          status: 'Active', perDay: s.camp.perDay, days: s.camp.days, refs: 3,
+          progress: '0 / ' + campTotal + ' posts published', pct: '0%', w: '0%'
+        }, ...s.campaigns]
+      })),
+      themeIcon: theme === 'light' ? '☾' : '☀',
+      themeLabel: theme === 'light' ? 'Dark mode' : 'Light mode',
+      toggleTheme: () => this.setState({ theme: theme === 'light' ? 'dark' : 'light' }),
+      isLanding: screen === 'landing', isLogin: screen === 'login',
+      isApp: screen === 'app', isAdmin: screen === 'admin',
+      goLanding: go({ screen: 'landing' }),
+      goLogin: go({ screen: 'login' }),
+      goDashboard: go({ screen: 'app', view: 'dashboard' }),
+      goGenerate: go({ screen: 'app', view: 'generate' }),
+      goAdmin: go({ screen: 'admin', adminView: 'overview' }),
+      isDash: S.view === 'dashboard', isAccount: S.view === 'account',
+      isGenerate: S.view === 'generate', isPosts: S.view === 'posts', isBilling: S.view === 'billing',
+      tabDna: S.accountTab === 'dna', tabPrompts: S.accountTab === 'prompts', tabSchedule: S.accountTab === 'schedule',
+      adOverview: S.adminView === 'overview', adUsers: S.adminView === 'users',
+      adJobs: S.adminView === 'jobs', adSystem: S.adminView === 'system',
+      navItems, adminNav, accountTabs,
+      stages, runPipeline: this.runPipeline,
+      runLabel: t < 0 ? '▶ Run pipeline now' : t >= 8 ? '↺ Run again' : 'Running…',
+      runOpacity: running ? .6 : 1,
+      noImage: t < 3, showImg1: t >= 3 && t < 5, showImg2: t >= 5,
+      genDone: t >= 8,
+      accounts, stats, activity, pillars, prompts, posts, bars, themes,
+      plans, invoices, landingStages, features,
+      autoBg: S.autonomous ? 'var(--green)' : 'var(--line)',
+      autoX: S.autonomous ? '19px' : '2.5px',
+      toggleAutonomous: () => this.setState(s => ({ autonomous: !s.autonomous })),
+      adminStats, health, signups, users, jobs, providers
+    };
+  }
+}
+</script>
+</body>
+</html>

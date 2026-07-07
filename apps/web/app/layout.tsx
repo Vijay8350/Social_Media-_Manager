@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
-  title: "Social Media Manager",
+  title: "ApanSocial — autonomous Instagram quote content",
   description:
-    "Autonomous AI quote-content generation and Instagram auto-posting.",
+    "Generate on-brand quote art from each account's DNA, gate it with AI, and auto-post to Instagram on schedule.",
 };
 
 // Set the theme class before paint to avoid a flash of the wrong theme.
@@ -20,11 +19,22 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+          rel="stylesheet"
+        />
       </head>
       <body className="flex min-h-screen flex-col">
         <div className="flex-1">{children}</div>
-        <footer className="border-t border-border px-6 py-6 text-xs text-muted-foreground">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+        <footer className="border-t border-border px-6 py-5 text-xs text-muted-foreground">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
+            <span>© 2026 ApanSocial · social.apanjob.com</span>
             <nav className="flex flex-wrap gap-4">
               <a className="hover:text-foreground" href="/privacy">
                 Privacy Policy
@@ -36,7 +46,6 @@ export default function RootLayout({
                 Data Deletion
               </a>
             </nav>
-            <ThemeToggle />
           </div>
         </footer>
       </body>

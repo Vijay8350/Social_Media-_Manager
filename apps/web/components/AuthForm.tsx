@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import type { AuthState } from "@/app/login/actions";
 
 type Action = (prev: AuthState, formData: FormData) => Promise<AuthState>;
@@ -22,13 +23,16 @@ export function AuthForm({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6">
-      <div className="text-center">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
-          Social Media Manager
-        </Link>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-          {isLogin ? "Welcome back" : "Create your account"}
-        </h1>
+      <div className="flex flex-col items-center gap-4 text-center">
+        <Logo />
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {isLogin ? "Welcome back" : "Create your account"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isLogin ? "Sign in to manage your accounts" : "Start your free trial"}
+          </p>
+        </div>
       </div>
 
       <form action={formAction} className="card flex flex-col gap-4 p-6">
