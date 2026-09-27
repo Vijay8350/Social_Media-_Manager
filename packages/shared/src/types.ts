@@ -210,3 +210,57 @@ export interface BusinessDna {
   generated_at: string | null;
   updated_at: string;
 }
+
+/** Comments: how replies are sent for an account. */
+export type CommentReplyMode = "off" | "review" | "auto";
+export type CommentVerdict = "positive" | "question" | "neutral" | "bad";
+export type CommentStatus =
+  | "new"
+  | "draft"
+  | "replying"
+  | "replied"
+  | "done"
+  | "flagged"
+  | "approved"
+  | "reviewed"
+  | "deleted"
+  | "error";
+
+/** Per-account comment automation settings (no row = not monitored). */
+export interface CommentSettings {
+  account_id: string;
+  user_id: string;
+  reply_mode: CommentReplyMode;
+  auto_hide: boolean;
+  daily_reply_limit: number;
+  last_checked_at: string | null;
+  last_error: string | null;
+  updated_at: string;
+}
+
+/** A top-level comment on one of the account's posts, with its AI review. */
+export interface IgComment {
+  id: string;
+  account_id: string;
+  user_id: string;
+  ig_comment_id: string;
+  ig_media_id: string;
+  media_permalink: string | null;
+  media_caption: string | null;
+  author: string | null;
+  text: string;
+  commented_at: string | null;
+  verdict: CommentVerdict | null;
+  category: string | null;
+  reason: string | null;
+  confidence: number | null;
+  status: CommentStatus;
+  hidden: boolean;
+  reply_text: string | null;
+  reply_ig_id: string | null;
+  replied_at: string | null;
+  reviewed_at: string | null;
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+}

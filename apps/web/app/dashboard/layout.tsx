@@ -28,12 +28,23 @@ export default async function DashboardShell({
   }));
   const defaultAccount = resolveDefaultAccount(list, savedDefault);
 
+  // Flagged comments on the default account (the Comments page opens on it).
+  // Error (e.g. migration 0005 not applied yet) → count is null → no badge.
+  const { count: flagged } = defaultAccount
+    ? await supabase
+        .from("ig_comments")
+        .select("id", { count: "exact", head: true })
+        .eq("account_id", defaultAccount.id)
+        .eq("status", "flagged")
+    : { count: 0 };
+
   return (
     <div className="flex min-h-screen">
       <Sidebar
         email={user.email ?? null}
         accounts={list}
         defaultAccountId={defaultAccount?.id ?? null}
+        flaggedComments={flagged ?? 0}
       />
       <div className="min-w-0 flex-1">{children}</div>
     </div>

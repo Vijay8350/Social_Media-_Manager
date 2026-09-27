@@ -133,3 +133,102 @@ export async function publishImagePost(params: {
   }
   throw new Error("unreachable");
 }
+
+// ---------------------------------------------------------------------------
+// Comments (needs the instagram_manage_comments permission)
+// ---------------------------------------------------------------------------
+
+async function graphCall<T>(method: "GET" | "POST" | "DELETE", url: URL): Promise<T> {
+  const res = await fetch(url.toString(), { method, signal: AbortSignal.timeout(20_000) });
+  const body = (await res.json().catch(() => ({}))) as T & {
+    error?: { message?: string; code?: number };
+  };
+  if (!res.ok || body.error) {
+    const e = new Error(body.error?.message ?? `Graph request failed (${res.status})`);
+    (e as Error & { code?: number }).code = body.error?.code;
+    throw e;
+  }
+  return body;
+}
+
+function graphUrl(path: string, token: string, params: Record<string, string> = {}): URL {
+  const url = new URL(`${GRAPH}/${version()}/${path}`);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  url.searchParams.set("access_token", token);
+  return url;
+}
+
+export interface MediaComment {
+  id: string;
+  text: string;
+  author: string | null;
+  timestamp: string;
+  hidden: boolean;
+  mediaId: string;
+  permalink: string | null;
+  caption: string | null;
+}
+
+/**
+ * Top-level comments left since `since` on the account's most recent posts.
+ * Replies (threads) aren't included.
+ */
+export async function fetchRecentComments(
+  igUserId: string,
+  token: string,
+  opts: { since: Date; mediaLimit?: number; perMedia?: number },
+): Promise<MediaComment[]> {
+  const media = await graphCall<{
+    data: Array<{ id: string; caption?: string; permalink?: string; comments_count?: number }>;
+  }>(
+    "GET",
+    graphUrl(`${igUserId}/media`, token, {
+      fields: "id,caption,permalink,comments_count",
+      limit: String(opts.mediaLimit ?? 10),
+    }),
+  );
+
+  const withComments = media.data.filter((m) => (m.comments_count ?? 0) > 0);
+  const perMedia = await Promise.all(
+    withComments.map(async (m) => {
+      const res = await graphCall<{
+        data: Array<{ id: string; text?: string; username?: string; timestamp: string; hidden?: boolean }>;
+      }>(
+        "GET",
+        graphUrl(`${m.id}/comments`, token, {
+          fields: "id,text,username,timestamp,hidden",
+          limit: String(opts.perMedia ?? 50),
+        }),
+      );
+      return res.data
+        .filter((c) => c.text && new Date(c.timestamp) >= opts.since)
+        .map<MediaComment>((c) => ({
+          id: c.id,
+          text: c.text!,
+          author: c.username ?? null,
+          timestamp: c.timestamp,
+          hidden: Boolean(c.hidden),
+          mediaId: m.id,
+          permalink: m.permalink ?? null,
+          caption: m.caption ?? null,
+        }));
+    }),
+  );
+  return perMedia.flat();
+}
+
+/** Post a public reply under a comment; returns the reply's comment id. */
+export async function replyToComment(commentId: string, token: string, message: string): Promise<string> {
+  const r = await graphCall<{ id: string }>("POST", graphUrl(`${commentId}/replies`, token, { message }));
+  return r.id;
+}
+
+/** Hide (or unhide) a comment. Hidden comments stay visible to their author only. */
+export async function setCommentHidden(commentId: string, token: string, hide: boolean): Promise<void> {
+  await graphCall("POST", graphUrl(commentId, token, { hide: String(hide) }));
+}
+
+/** Permanently delete a comment on one of the account's posts. */
+export async function deleteComment(commentId: string, token: string): Promise<void> {
+  await graphCall("DELETE", graphUrl(commentId, token));
+}

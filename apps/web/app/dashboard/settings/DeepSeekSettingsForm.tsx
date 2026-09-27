@@ -52,7 +52,13 @@ export function DeepSeekSettingsForm({
     testDeepSeekSettings,
     undefined,
   );
-  const knownModel = modelOptions.some((o) => o.id === model);
+  // After a test/save, also offer the models this key actually has (DeepSeek renames them).
+  const keyModels = saveState?.test?.models ?? testState?.test?.models ?? [];
+  const options = [
+    ...modelOptions,
+    ...keyModels.filter((id) => !modelOptions.some((o) => o.id === id)).map((id) => ({ id, label: id })),
+  ];
+  const knownModel = options.some((o) => o.id === model);
 
   return (
     <>
@@ -86,7 +92,7 @@ export function DeepSeekSettingsForm({
           Model
           <select name="model" defaultValue={knownModel ? model : ""} className={`${field} bg-card`}>
             <option value="">Server default ({serverModel})</option>
-            {modelOptions.map((o) => (
+            {options.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.label}
               </option>

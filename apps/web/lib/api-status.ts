@@ -106,9 +106,15 @@ export function checkDeepSeek(settings: LlmUserSettings): Promise<Check> {
     .digest("hex");
   return cached(`deepseek:${id}`, async () => {
     const r = await testLLMConnection(resolved);
-    return r.ok
-      ? { state: "ok", detail: `${resolved.model} · ${source}` }
-      : { state: "error", detail: `${r.message} (${source})` };
+    if (r.ok) return { state: "ok", detail: `${resolved.model} · ${source}` };
+    // Generation switches to an available model on its own, so this still works.
+    if (r.problem === "model" && r.suggestedModel) {
+      return {
+        state: "ok",
+        detail: `${r.suggestedModel} · ${source} ("${resolved.model}" isn't available — set a model in Settings)`,
+      };
+    }
+    return { state: "error", detail: `${r.message} (${source})` };
   });
 }
 

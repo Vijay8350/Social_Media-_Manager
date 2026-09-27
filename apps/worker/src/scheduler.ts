@@ -56,6 +56,19 @@ async function loadSchedule(
     .maybeSingle();
 }
 
+/**
+ * Subscription gate (M9): the users with an active/trialing subscription, or
+ * null when billing isn't configured (dev / pre-billing — don't gate).
+ */
+export async function loadPaidUsers(svc: Svc): Promise<Set<string> | null> {
+  if (!process.env.STRIPE_SECRET_KEY) return null;
+  const { data: subs } = await svc
+    .from("subscriptions")
+    .select("user_id, status")
+    .in("status", ["active", "trialing"]);
+  return new Set((subs ?? []).map((s) => s.user_id as string));
+}
+
 // Keep finished jobs this long so their per-slot jobId keeps blocking re-adds —
 // a late tick, a restart or an overlapping scan can't post the same slot twice.
 const KEEP_JOBS = { age: 2 * 24 * 60 * 60 }; // seconds
@@ -75,17 +88,7 @@ export async function scanAndEnqueue(): Promise<number> {
     .eq("status", "connected");
   if (!accounts?.length) return 0;
 
-  // Subscription gate (M9): only run for paid managers when billing is enabled.
-  // If Stripe isn't configured, don't gate (dev / pre-billing).
-  const billingEnabled = Boolean(process.env.STRIPE_SECRET_KEY);
-  let paidUsers: Set<string> | null = null;
-  if (billingEnabled) {
-    const { data: subs } = await svc
-      .from("subscriptions")
-      .select("user_id, status")
-      .in("status", ["active", "trialing"]);
-    paidUsers = new Set((subs ?? []).map((s) => s.user_id));
-  }
+  const paidUsers = await loadPaidUsers(svc);
 
   let enqueued = 0;
   for (const acct of accounts) {

@@ -6,10 +6,12 @@ import {
   QUEUE_PREFIX,
   schedulerQueue,
   analyticsQueue,
+  commentsQueue,
 } from "./queues.js";
 import { runDailyPipeline } from "./pipeline.js";
 import { scanAndEnqueue } from "./scheduler.js";
 import { pullAnalytics } from "./analytics.js";
+import { sweepComments } from "./comments.js";
 
 /**
  * Worker entrypoint (M7 autopilot).
@@ -45,6 +47,15 @@ async function main() {
     { connection, prefix: QUEUE_PREFIX, concurrency: 2 },
   );
 
+  const commentsWorker = new Worker(
+    QUEUE_NAMES.comments,
+    async () => {
+      const n = await sweepComments();
+      if (n > 0) console.log(`[comments] reviewed ${n} comment(s)`);
+    },
+    { connection, prefix: QUEUE_PREFIX },
+  );
+
   const analyticsWorker = new Worker(
     QUEUE_NAMES.analytics,
     async () => {
@@ -71,13 +82,20 @@ async function main() {
     {},
     { repeat: { every: 6 * 60 * 60_000 }, removeOnComplete: true, removeOnFail: 50 },
   );
-  console.log("[worker] scheduler (15m) + analytics (6h) scheduled");
+  // Comments sweep every 15 minutes (auto-reply + moderation).
+  await commentsQueue.add(
+    "sweep",
+    {},
+    { repeat: { every: 15 * 60_000 }, removeOnComplete: true, removeOnFail: 50 },
+  );
+  console.log("[worker] scheduler (15m) + comments (15m) + analytics (6h) scheduled");
 
   const shutdown = async () => {
     console.log("[worker] shutting down…");
     await schedulerWorker.close();
     await pipelineWorker.close();
     await analyticsWorker.close();
+    await commentsWorker.close();
     process.exit(0);
   };
   process.on("SIGINT", shutdown);

@@ -116,6 +116,27 @@ async function settingsFromForm(
   };
 }
 
+/**
+ * "Server default" chosen, but that model isn't available to this key (DeepSeek
+ * renames models, e.g. deepseek-chat → deepseek-flash): use the best model the
+ * key does have instead of refusing. Sets `next.model` and returns the adjusted
+ * result; null when nothing changes. An explicitly chosen model is never replaced.
+ */
+function autoModel(
+  test: LLMConnectionResult,
+  next: LlmUserSettings,
+  wanted: string,
+): LLMConnectionResult | null {
+  if (test.problem !== "model" || next.model || !test.suggestedModel) return null;
+  next.model = test.suggestedModel;
+  return {
+    ...test,
+    ok: true,
+    problem: undefined,
+    message: `"${test.suggestedModel}" will be used ("${wanted}" isn't available to this key).`,
+  };
+}
+
 /** What the form may show. The balance only for the user's own key — never the server's. */
 function publicTest(t: LLMConnectionResult, s: LlmUserSettings): NonNullable<SettingsState>["test"] {
   return { ok: t.ok, message: t.message, models: t.models, balance: s.api_key_encrypted ? t.balance : null };
@@ -143,10 +164,14 @@ export async function saveDeepSeekSettings(
     const config = resolveLlmConfig(parsed.next);
     if (config) {
       test = await testLLMConnection(config);
+      const switched = autoModel(test, parsed.next, config.model);
+      if (switched) test = switched;
       if (!test.ok && (test.problem === "auth" || test.problem === "model")) {
         return { error: `Not saved: ${test.message}`, test: publicTest(test, parsed.next) };
       }
-      message = test.ok ? "Saved and verified ✓" : `Saved, but couldn't verify right now: ${test.message}`;
+      message = test.ok
+        ? `Saved and verified ✓${switched ? ` — ${test.message}` : ""}`
+        : `Saved, but couldn't verify right now: ${test.message}`;
     }
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Couldn't read the saved key" };
@@ -178,9 +203,15 @@ export async function testDeepSeekSettings(
   try {
     const config = resolveLlmConfig(parsed.next);
     if (!config) return { error: "There's no API key to test — paste yours first." };
-    const test = await testLLMConnection(config);
+    const raw = await testLLMConnection(config);
+    const switched = autoModel(raw, { ...parsed.next }, config.model);
+    const test = switched ?? raw;
     return test.ok
-      ? { ok: true, message: test.message, test: publicTest(test, parsed.next) }
+      ? {
+          ok: true,
+          message: switched ? `Key works — ${test.message}` : test.message,
+          test: publicTest(test, parsed.next),
+        }
       : { error: test.message, test: publicTest(test, parsed.next) };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Test failed" };

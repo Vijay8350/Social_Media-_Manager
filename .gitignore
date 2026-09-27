@@ -28,3 +28,8 @@ Thumbs.db
 # misc
 coverage/
 .turbo/
+
+# private keys / credentials — never commit
+*.pem
+*.ppk
+*.key

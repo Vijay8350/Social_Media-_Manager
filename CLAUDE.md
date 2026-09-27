@@ -80,7 +80,7 @@ Run from the repo root (pnpm workspaces). Node ≥ 20; `pnpm install` first.
 
 **Env:** copy `.env.example` → `.env` (root, for the worker) **and** → `apps/web/.env.local` (Next.js reads `.env.local`). The web build requires `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` to be present.
 
-**DB:** apply `supabase/migrations/0001_init.sql`, then `0002_campaigns_schedule.sql`, `0003_business_dna.sql` and `0004_rls_hardening.sql`, in order via Supabase Studio SQL editor (or `supabase db push`). All are idempotent.
+**DB:** apply `supabase/migrations/0001_init.sql`, then `0002_campaigns_schedule.sql`, `0003_business_dna.sql`, `0004_rls_hardening.sql` and `0005_comments.sql`, in order via Supabase Studio SQL editor (or `supabase db push`). All are idempotent.
 
 ### Conventions worth knowing
 - `packages/shared` is consumed as TypeScript source (not built); `apps/web` lists it under `transpilePackages`. ESM throughout — use **extensionless** relative imports inside `shared` (e.g. `export * from "./types"`), so tsc, Next/webpack, and tsx all resolve them. Do not add `.js` extensions: Next's webpack build can't map them back to `.ts` and fails with "Module not found".

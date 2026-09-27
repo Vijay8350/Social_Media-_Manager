@@ -24,8 +24,8 @@ export interface LlmUserSettings {
 
 /** Models offered in Settings (any model id the key can access is accepted). */
 export const DEEPSEEK_MODEL_OPTIONS = [
-  { id: "deepseek-chat", label: "deepseek-chat — fast, great for captions (recommended)" },
-  { id: "deepseek-reasoner", label: "deepseek-reasoner — thinks before answering; slower" },
+  { id: "deepseek-flash", label: "deepseek-flash — fast, great for captions (recommended)" },
+  { id: "deepseek-v4-pro", label: "deepseek-v4-pro — most capable; slower" },
 ] as const;
 
 /** Safely read the llm block out of a profiles.settings jsonb value. */

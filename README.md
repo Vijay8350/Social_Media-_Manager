@@ -45,7 +45,7 @@ cp .env.example apps/web/.env.local   # Next.js reads .env.local
 
 # 2. Database: apply the migrations to your Supabase project
 #    Supabase Studio → SQL Editor → run each supabase/migrations/*.sql in order
-#    (0001_init → 0002_campaigns_schedule → 0003_business_dna → 0004_rls_hardening)
+#    (0001_init → 0002_campaigns_schedule → 0003_business_dna → 0004_rls_hardening → 0005_comments)
 #    (or use the Supabase CLI: `supabase db push`)
 
 # 3. Redis (local)
