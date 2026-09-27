@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { isInstagramConfigured } from "@/lib/instagram-config";
 import type { InstagramAccount, Post } from "@insta/shared";
+import { getDefaultAccountId, resolveDefaultAccount } from "@/lib/default-account";
+import { setDefaultAccount } from "./actions";
 
 const ERROR_MESSAGES: Record<string, string> = {
   not_configured: "Instagram isn't configured yet — add FACEBOOK_APP_ID / FACEBOOK_APP_SECRET to your env.",
@@ -33,12 +35,14 @@ export default async function DashboardPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: accounts }, { data: postRows }] = await Promise.all([
+  const [{ data: accounts }, { data: postRows }, savedDefault] = await Promise.all([
     supabase.from("instagram_accounts").select("*").order("created_at", { ascending: true }),
     supabase.from("posts").select("id, headline, status, origin, created_at, account_id").order("created_at", { ascending: false }).limit(40),
+    user ? getDefaultAccountId(supabase, user.id) : Promise.resolve(null),
   ]);
 
   const list = (accounts ?? []) as InstagramAccount[];
+  const defaultId = resolveDefaultAccount(list, savedDefault)?.id ?? null;
   const posts = (postRows as Pick<Post, "id" | "headline" | "status" | "origin" | "created_at" | "account_id">[] | null) ?? [];
   const weekAgo = Date.now() - 7 * 864e5;
   const thisWeek = posts.filter((p) => new Date(p.created_at).getTime() > weekAgo);
@@ -114,14 +118,29 @@ export default async function DashboardPage({
                   {(acct.ig_username?.[0] ?? "@").toUpperCase()}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold">@{acct.ig_username ?? acct.ig_user_id ?? "unknown"}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-bold">@{acct.ig_username ?? acct.ig_user_id ?? "unknown"}</span>
+                    {acct.id === defaultId && (
+                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10.5px] font-bold text-accent">★ Default</span>
+                    )}
+                  </div>
                   <div className="text-[12.5px] text-muted-foreground">
                     {statusLabel(acct.status)}
                     {acct.token_expiry ? ` · token to ${new Date(acct.token_expiry).toLocaleDateString()}` : ""}
                   </div>
                 </div>
+                {acct.id !== defaultId && (
+                  <form action={setDefaultAccount.bind(null, acct.id)}>
+                    <button
+                      className="rounded-lg px-2.5 py-1.5 text-[12.5px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      title="Set as default account"
+                    >
+                      ☆ Set default
+                    </button>
+                  </form>
+                )}
                 <Link
-                  href={`/dashboard/accounts/${acct.id}/dna`}
+                  href={`/dashboard/accounts/${acct.id}`}
                   className="rounded-lg border border-border px-3.5 py-1.5 text-[13px] font-semibold transition hover:bg-muted"
                 >
                   Open

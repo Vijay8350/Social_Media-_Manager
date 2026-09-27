@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingSchema, MIGRATION_0002_HINT } from "@/lib/db-errors";
 import type { Campaign } from "@insta/shared";
 import { generateFromCampaign, setCampaignStatus } from "./actions";
 
@@ -12,13 +13,25 @@ const STATUS_BADGE: Record<string, string> = {
   done: "bg-muted text-muted-foreground",
 };
 
-export default async function CampaignsPage() {
+export default async function CampaignsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ err?: string }>;
+}) {
+  const { err } = await searchParams;
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("campaigns")
     .select("*, instagram_accounts(ig_username)")
     .order("created_at", { ascending: false });
   const campaigns = (data as Row[] | null) ?? [];
+  // Only known codes are shown, so a crafted ?err=… link can't display arbitrary text.
+  const ERRORS: Record<string, string> = {
+    schema: MIGRATION_0002_HINT,
+    account: "Account not found.",
+    save: "Couldn't create the campaign — please try again.",
+  };
+  const banner = isMissingSchema(error) ? MIGRATION_0002_HINT : (err && ERRORS[err]) || null;
 
   return (
     <main className="mx-auto max-w-5xl px-8 py-8">
@@ -31,6 +44,10 @@ export default async function CampaignsPage() {
         </div>
         <Link href="/dashboard/campaigns/new" className="btn-primary">＋ New campaign</Link>
       </div>
+
+      {banner && (
+        <div className="card mt-6 border-red-500/40 p-4 text-sm text-red-600">{banner}</div>
+      )}
 
       {campaigns.length === 0 ? (
         <div className="card mt-6 border-dashed p-10 text-center text-sm text-muted-foreground">

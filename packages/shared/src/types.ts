@@ -166,3 +166,47 @@ export interface QualityVerdict {
   reasons: string[];
   score: number;
 }
+
+/** What a Business DNA was built from (shown in the UI; no raw content stored). */
+export interface BusinessDnaSources {
+  instagram?: {
+    username: string | null;
+    posts_analyzed: number;
+    followers: number | null;
+    error?: string;
+  };
+  website?: { url: string; pages: string[]; error?: string };
+}
+
+/**
+ * Business DNA — a per-account business profile auto-built (DeepSeek) from the
+ * account's Instagram profile + captions and its website. Editable; when
+ * `use_in_generation` is on it conditions text generation alongside Account DNA.
+ */
+export interface BusinessDna {
+  id: string;
+  account_id: string;
+  user_id: string;
+  business_name: string | null;
+  website_url: string | null;
+  summary: string | null;
+  industry: string | null;
+  offerings: string[];
+  usps: string[];
+  target_customers: string | null;
+  brand_voice: string | null;
+  tone: string | null;
+  brand_values: string[];
+  key_messages: string[];
+  content_themes: string[];
+  ctas: string[];
+  keywords: string[];
+  visual_cues: string | null;
+  language: string | null;
+  dos: string[];
+  donts: string[];
+  use_in_generation: boolean;
+  sources: BusinessDnaSources;
+  generated_at: string | null;
+  updated_at: string;
+}

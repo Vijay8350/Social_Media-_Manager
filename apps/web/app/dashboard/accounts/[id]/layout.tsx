@@ -41,10 +41,22 @@ export default async function AccountLayout({
 
       <nav className="mt-6 flex gap-4 border-b border-border text-sm">
         <Link
+          href={`/dashboard/accounts/${id}`}
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
+        >
+          Overview
+        </Link>
+        <Link
           href={`/dashboard/accounts/${id}/dna`}
           className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
         >
           Account DNA
+        </Link>
+        <Link
+          href={`/dashboard/accounts/${id}/business-dna`}
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
+        >
+          Business DNA
         </Link>
         <Link
           href={`/dashboard/accounts/${id}/prompts`}

@@ -34,9 +34,13 @@ async function main() {
   const pipelineWorker = new Worker(
     QUEUE_NAMES.pipeline,
     async (job) => {
-      const { accountId, userId } = job.data as { accountId: string; userId: string };
+      const { accountId, userId, maxPerDay } = job.data as {
+        accountId: string;
+        userId: string;
+        maxPerDay?: number;
+      };
       console.log(`[pipeline] run account=${accountId}`);
-      await runDailyPipeline(accountId, userId);
+      await runDailyPipeline(accountId, userId, maxPerDay);
     },
     { connection, prefix: QUEUE_PREFIX, concurrency: 2 },
   );

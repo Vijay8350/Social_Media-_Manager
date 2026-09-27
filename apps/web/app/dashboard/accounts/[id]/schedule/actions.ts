@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isMissingSchema, MIGRATION_0002_HINT } from "@/lib/db-errors";
 
 export type ScheduleState = { ok?: boolean; error?: string } | undefined;
 
@@ -30,6 +31,11 @@ export async function saveSchedule(
     .filter((s) => /^\d{2}:\d{2}$/.test(s));
   const autonomous = formData.get("autonomous") === "on";
   const timezone = String(formData.get("timezone") ?? "UTC").trim() || "UTC";
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone });
+  } catch {
+    return { error: `Unknown timezone "${timezone}" — use an IANA name like Asia/Kolkata.` };
+  }
 
   const fields = { posting_slots: slots, autonomous, timezone };
 
@@ -46,7 +52,9 @@ export async function saveSchedule(
         .from("account_dna")
         .insert({ account_id: accountId, user_id: user.id, ...fields });
 
-  if (result.error) return { error: result.error.message };
+  if (result.error) {
+    return { error: isMissingSchema(result.error) ? MIGRATION_0002_HINT : result.error.message };
+  }
 
   revalidatePath(`/dashboard/accounts/${accountId}/schedule`);
   return { ok: true };

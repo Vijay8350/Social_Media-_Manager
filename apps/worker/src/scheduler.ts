@@ -1,4 +1,4 @@
-import { createServiceRoleClient } from "@insta/shared";
+import { createServiceRoleClient, type AccountDna } from "@insta/shared";
 import { pipelineQueue } from "./queues.js";
 
 const WINDOW_MIN = 15; // scheduler tick interval
@@ -27,12 +27,45 @@ function toMinutes(hhmm: string): number | null {
   return Number(m[1]) * 60 + Number(m[2]);
 }
 
+type Svc = ReturnType<typeof createServiceRoleClient>;
+type Schedule = Pick<AccountDna, "default_post_time" | "timezone"> &
+  Partial<Pick<AccountDna, "posting_slots" | "autonomous">>;
+
 /**
- * Scan connected accounts and enqueue a daily pipeline job for any whose local
- * time has just reached its configured post time. Idempotent via a per-day jobId
- * so re-scans within the window don't double-enqueue.
- *
- * (M9 adds the subscription gate here.)
+ * Load an account's schedule settings. If migration 0002 (posting_slots /
+ * autonomous) isn't applied yet, fall back to the DNA's single post time so
+ * posting keeps working as it did before the Schedule tab existed.
+ */
+async function loadSchedule(
+  svc: Svc,
+  accountId: string,
+  userId: string,
+): Promise<{ data: Schedule | null; error: { message: string } | null }> {
+  const full = await svc
+    .from("account_dna")
+    .select("default_post_time, timezone, posting_slots, autonomous")
+    .eq("account_id", accountId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (full.error?.code !== "42703") return full; // 42703 = undefined column
+  return svc
+    .from("account_dna")
+    .select("default_post_time, timezone")
+    .eq("account_id", accountId)
+    .eq("user_id", userId)
+    .maybeSingle();
+}
+
+// Keep finished jobs this long so their per-slot jobId keeps blocking re-adds —
+// a late tick, a restart or an overlapping scan can't post the same slot twice.
+const KEEP_JOBS = { age: 2 * 24 * 60 * 60 }; // seconds
+
+/**
+ * Scan connected accounts and enqueue a pipeline job for every posting slot whose
+ * local time has just been reached. Slots come from the Schedule tab
+ * (`posting_slots`), falling back to the DNA's single `default_post_time`.
+ * Accounts with autonomous mode off are never enqueued. Idempotent via a
+ * per-day, per-slot jobId so re-scans within the window don't double-enqueue.
  */
 export async function scanAndEnqueue(): Promise<number> {
   const svc = createServiceRoleClient();
@@ -57,32 +90,51 @@ export async function scanAndEnqueue(): Promise<number> {
   let enqueued = 0;
   for (const acct of accounts) {
     if (paidUsers && !paidUsers.has(acct.user_id)) continue;
-    const { data: dna } = await svc
-      .from("account_dna")
-      .select("default_post_time, timezone")
-      .eq("account_id", acct.id)
-      .maybeSingle();
-    if (!dna?.default_post_time) continue;
+    const { data: dna, error: dnaErr } = await loadSchedule(svc, acct.id, acct.user_id);
+    if (dnaErr) {
+      console.error(`[scheduler] account=${acct.id} dna lookup failed: ${dnaErr.message}`);
+      continue;
+    }
+    // Fail closed: autonomous mode switched off on the Schedule tab → never auto-post.
+    if (!dna || dna.autonomous === false) continue;
 
-    const postMin = toMinutes(dna.default_post_time);
-    if (postMin == null) continue;
+    const configured: string[] = dna.posting_slots?.length
+      ? dna.posting_slots
+      : dna.default_post_time
+        ? [dna.default_post_time]
+        : [];
+    const slotMins = [
+      ...new Set(configured.map(toMinutes).filter((m): m is number => m != null)),
+    ];
+    if (!slotMins.length) continue;
 
-    const { minutes, date } = localParts(dna.timezone || "UTC");
-    const due = minutes >= postMin && minutes < postMin + WINDOW_MIN;
-    if (!due) continue;
+    // A bad timezone throws a RangeError; skip this account rather than abort the whole scan.
+    let local: { minutes: number; date: string };
+    try {
+      local = localParts(dna.timezone || "UTC");
+    } catch {
+      console.error(`[scheduler] account=${acct.id} invalid timezone "${dna.timezone}"; skipping`);
+      continue;
+    }
 
-    await pipelineQueue.add(
-      "run",
-      { accountId: acct.id, userId: acct.user_id },
-      {
-        jobId: `daily-${acct.id}-${date}`,
-        removeOnComplete: true,
-        removeOnFail: 100,
-        attempts: 2,
-        backoff: { type: "exponential", delay: 30_000 },
-      },
-    );
-    enqueued++;
+    for (const postMin of slotMins) {
+      const due = local.minutes >= postMin && local.minutes < postMin + WINDOW_MIN;
+      if (!due) continue;
+
+      await pipelineQueue.add(
+        "run",
+        { accountId: acct.id, userId: acct.user_id, maxPerDay: slotMins.length },
+        {
+          // Minute-of-day, not "HH:MM" — BullMQ custom ids can't contain ":".
+          jobId: `daily-${acct.id}-${local.date}-${postMin}`,
+          removeOnComplete: KEEP_JOBS,
+          removeOnFail: KEEP_JOBS,
+          attempts: 2,
+          backoff: { type: "exponential", delay: 30_000 },
+        },
+      );
+      enqueued++;
+    }
   }
   return enqueued;
 }

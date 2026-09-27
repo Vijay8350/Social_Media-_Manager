@@ -1,6 +1,7 @@
 import {
   createServiceRoleClient,
-  getLLMProvider,
+  getLLMProviderForUser,
+  getActiveBusinessDna,
   getImageProvider,
   getVisionProvider,
   buildImagePrompt,
@@ -37,10 +38,10 @@ async function log(
 
 /**
  * Full autonomous pipeline for one account (Stages 1–5). Service-role client,
- * so every query is explicitly scoped by user_id. Idempotent per day: skips if
- * an auto post was already published today for this account.
+ * so every query is explicitly scoped by user_id. Idempotent per day: skips once
+ * `maxPerDay` auto posts (one per posting slot) were already published today.
  */
-export async function runDailyPipeline(accountId: string, userId: string) {
+export async function runDailyPipeline(accountId: string, userId: string, maxPerDay = 1) {
   const svc = createServiceRoleClient();
 
   const { data: account } = await svc
@@ -61,11 +62,12 @@ export async function runDailyPipeline(accountId: string, userId: string) {
     .from("posts")
     .select("id", { count: "exact", head: true })
     .eq("account_id", accountId)
+    .eq("user_id", userId)
     .eq("origin", "auto")
     .eq("status", "published")
     .gte("published_at", startOfDay.toISOString());
-  if ((publishedToday ?? 0) > 0) {
-    await log(svc, { user_id: userId, account_id: accountId, stage: "start", level: "info", message: "already posted today; skipping" });
+  if ((publishedToday ?? 0) >= maxPerDay) {
+    await log(svc, { user_id: userId, account_id: accountId, stage: "start", level: "info", message: `already posted ${publishedToday} of ${maxPerDay} today; skipping` });
     return;
   }
 
@@ -73,14 +75,21 @@ export async function runDailyPipeline(accountId: string, userId: string) {
     .from("account_dna")
     .select("*")
     .eq("account_id", accountId)
+    .eq("user_id", userId)
     .maybeSingle();
   const dna = (dnaRow as AccountDna | null) ?? null;
+  // Autonomous mode may have been switched off after this job was enqueued.
+  if (dna?.autonomous === false) {
+    await log(svc, { user_id: userId, account_id: accountId, stage: "start", level: "info", message: "autonomous mode off; skipping" });
+    return;
+  }
 
   // Rotate an active quote-idea prompt (least recently used).
   const { data: quotePrompt } = await svc
     .from("prompt_library")
     .select("id, prompt_text, use_count")
     .eq("account_id", accountId)
+    .eq("user_id", userId)
     .eq("type", "quote_idea")
     .eq("active", true)
     .order("last_used_at", { ascending: true, nullsFirst: true })
@@ -91,7 +100,16 @@ export async function runDailyPipeline(accountId: string, userId: string) {
     return;
   }
 
-  const llm = getLLMProvider();
+  // The manager's own DeepSeek key/model from Settings (falls back to the server key).
+  let llm: Awaited<ReturnType<typeof getLLMProviderForUser>>;
+  try {
+    llm = await getLLMProviderForUser(svc, userId);
+  } catch (err) {
+    // A config problem — retrying won't help, so log and stop instead of throwing.
+    await log(svc, { user_id: userId, account_id: accountId, stage: "idea", level: "error", message: err instanceof Error ? err.message : "no text model configured" });
+    return;
+  }
+  const business = await getActiveBusinessDna(svc, accountId, userId);
   const image = getImageProvider();
   const vision = getVisionProvider();
 
@@ -101,24 +119,26 @@ export async function runDailyPipeline(accountId: string, userId: string) {
       .from("content_ideas")
       .select("idea")
       .eq("account_id", accountId)
+      .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(15);
     const recentSummaries = (recent ?? [])
       .map((r) => (r.idea as { summary?: string } | null)?.summary)
       .filter((s): s is string => Boolean(s));
 
-    let idea = await llm.generateIdea(dna, quotePrompt.prompt_text, recentSummaries);
+    let idea = await llm.generateIdea(dna, quotePrompt.prompt_text, recentSummaries, business);
     let hash = normalizeHash(idea.summary);
     for (let i = 0; i < 3; i++) {
       const { data: dup } = await svc
         .from("content_ideas")
         .select("id")
         .eq("account_id", accountId)
+        .eq("user_id", userId)
         .eq("normalized_hash", hash)
         .maybeSingle();
       if (!dup) break;
       recentSummaries.unshift(idea.summary);
-      idea = await llm.generateIdea(dna, quotePrompt.prompt_text, recentSummaries);
+      idea = await llm.generateIdea(dna, quotePrompt.prompt_text, recentSummaries, business);
       hash = normalizeHash(idea.summary);
     }
 
@@ -129,7 +149,7 @@ export async function runDailyPipeline(accountId: string, userId: string) {
       .single();
 
     // Stage 2 — content.
-    const content = await llm.generateContent(dna, idea);
+    const content = await llm.generateContent(dna, idea, business);
     const { data: postRow } = await svc
       .from("posts")
       .insert({
@@ -156,6 +176,7 @@ export async function runDailyPipeline(accountId: string, userId: string) {
       .from("prompt_library")
       .select("id, prompt_text, use_count")
       .eq("account_id", accountId)
+      .eq("user_id", userId)
       .eq("type", "image_idea")
       .eq("active", true)
       .order("last_used_at", { ascending: true, nullsFirst: true })
@@ -203,6 +224,7 @@ export async function runDailyPipeline(accountId: string, userId: string) {
       .from("posts")
       .select("id", { count: "exact", head: true })
       .eq("account_id", accountId)
+      .eq("user_id", userId)
       .eq("status", "published")
       .gte("published_at", since);
     if ((count ?? 0) >= DAILY_LIMIT) {

@@ -32,6 +32,7 @@ export async function pullAnalytics(): Promise<number> {
           .from("instagram_accounts")
           .select("encrypted_token")
           .eq("id", post.account_id)
+          .eq("user_id", post.user_id)
           .maybeSingle();
         token = acct?.encrypted_token ? decryptSecret(acct.encrypted_token) : null;
         tokens.set(post.account_id, token);

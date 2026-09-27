@@ -43,8 +43,9 @@ cp .env.example apps/web/.env.local   # Next.js reads .env.local
 #   Fill in Supabase URL + keys, DeepSeek/Gemini/Meta keys, and a
 #   TOKEN_ENCRYPTION_KEY:  openssl rand -base64 32
 
-# 2. Database: apply the migration to your Supabase project
-#    Supabase Studio → SQL Editor → paste supabase/migrations/0001_init.sql
+# 2. Database: apply the migrations to your Supabase project
+#    Supabase Studio → SQL Editor → run each supabase/migrations/*.sql in order
+#    (0001_init → 0002_campaigns_schedule → 0003_business_dna → 0004_rls_hardening)
 #    (or use the Supabase CLI: `supabase db push`)
 
 # 3. Redis (local)

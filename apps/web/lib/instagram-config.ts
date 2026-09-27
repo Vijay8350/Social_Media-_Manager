@@ -6,6 +6,7 @@
 const DEFAULT_FACEBOOK_SCOPES = [
   "instagram_basic",
   "instagram_content_publish",
+  "instagram_manage_comments", // comment auto-reply + moderation (Comments section)
   "pages_show_list",
   "pages_read_engagement",
   "business_management",

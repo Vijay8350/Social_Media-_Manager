@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
-  getLLMProvider,
+  getLLMProviderForUser,
+  getActiveBusinessDna,
   getImageProvider,
   getVisionProvider,
   buildImagePrompt,
@@ -64,6 +65,7 @@ export async function generateNow(
     .eq("account_id", accountId)
     .maybeSingle();
   const dna = (dnaRow as AccountDna | null) ?? null;
+  const business = await getActiveBusinessDna(supabase, accountId, user.id);
 
   // Recent idea summaries to steer away from repeats.
   const { data: recent } = await supabase
@@ -76,11 +78,11 @@ export async function generateNow(
     .map((r) => (r.idea as { summary?: string } | null)?.summary)
     .filter((s): s is string => Boolean(s));
 
-  const llm = getLLMProvider();
-
   try {
+    const llm = await getLLMProviderForUser(supabase, user.id);
+
     // Stage 1: fresh, de-duplicated idea (retry if it collides with an existing hash).
-    let idea = await llm.generateIdea(dna, promptText, recentSummaries);
+    let idea = await llm.generateIdea(dna, promptText, recentSummaries, business);
     let hash = normalizeHash(idea.summary);
     for (let attempt = 0; attempt < 3; attempt++) {
       const { data: dup } = await supabase
@@ -91,7 +93,7 @@ export async function generateNow(
         .maybeSingle();
       if (!dup) break;
       recentSummaries.unshift(idea.summary);
-      idea = await llm.generateIdea(dna, promptText, recentSummaries);
+      idea = await llm.generateIdea(dna, promptText, recentSummaries, business);
       hash = normalizeHash(idea.summary);
       if (attempt === 2) return { error: "Couldn't produce a fresh idea — try again." };
     }
@@ -111,7 +113,7 @@ export async function generateNow(
     if (ideaErr || !ideaRow) return { error: ideaErr?.message ?? "Failed to save idea" };
 
     // Stage 2: content JSON.
-    const content = await llm.generateContent(dna, idea);
+    const content = await llm.generateContent(dna, idea, business);
 
     const { error: postErr } = await supabase.from("posts").insert({
       account_id: accountId,

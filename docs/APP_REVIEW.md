@@ -7,6 +7,7 @@ accounts, submit for App Review and request Advanced Access to the permissions.
 ## Permissions to request (Advanced Access)
 - `instagram_basic`
 - `instagram_content_publish`
+- `instagram_manage_comments` (comment auto-reply + moderation)
 - `pages_show_list`
 - `pages_read_engagement`
 - `business_management`

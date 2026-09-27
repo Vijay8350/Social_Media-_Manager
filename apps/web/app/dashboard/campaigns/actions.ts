@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getLLMProvider, normalizeHash, type AccountDna } from "@insta/shared";
+import { isMissingSchema } from "@/lib/db-errors";
+import {
+  getActiveBusinessDna,
+  getLLMProviderForUser,
+  normalizeHash,
+  type AccountDna,
+} from "@insta/shared";
 
 function str(v: FormDataEntryValue | null): string {
   return String(v ?? "").trim();
@@ -71,7 +77,7 @@ export async function createCampaign(formData: FormData): Promise<void> {
     hasRefs: refs.length > 0,
   });
 
-  await supabase.from("campaigns").insert({
+  const { error } = await supabase.from("campaigns").insert({
     account_id: accountId,
     user_id: user.id,
     name,
@@ -86,6 +92,11 @@ export async function createCampaign(formData: FormData): Promise<void> {
     posts_target: perDayNum * daysNum,
     posts_done: 0,
   });
+  if (error) {
+    // Pass a code, not text — the page only renders messages it knows.
+    if (!isMissingSchema(error)) console.error("[createCampaign] insert failed:", error.message);
+    redirect(`/dashboard/campaigns?err=${isMissingSchema(error) ? "schema" : "save"}`);
+  }
 
   revalidatePath("/dashboard/campaigns");
   redirect("/dashboard/campaigns");
@@ -127,6 +138,7 @@ export async function generateFromCampaign(id: string) {
     .eq("account_id", campaign.account_id)
     .maybeSingle();
   const dna = (dnaRow as AccountDna | null) ?? null;
+  const business = await getActiveBusinessDna(supabase, campaign.account_id, user.id);
 
   const { data: recent } = await supabase
     .from("content_ideas")
@@ -139,10 +151,9 @@ export async function generateFromCampaign(id: string) {
     .filter((s): s is string => Boolean(s));
 
   const seed = campaign.prompt || campaign.topic || campaign.name;
-  const llm = getLLMProvider();
-
   try {
-    let idea = await llm.generateIdea(dna, seed, recentSummaries);
+    const llm = await getLLMProviderForUser(supabase, user.id);
+    let idea = await llm.generateIdea(dna, seed, recentSummaries, business);
     let hash = normalizeHash(idea.summary);
     for (let attempt = 0; attempt < 3; attempt++) {
       const { data: dup } = await supabase
@@ -153,7 +164,7 @@ export async function generateFromCampaign(id: string) {
         .maybeSingle();
       if (!dup) break;
       recentSummaries.unshift(idea.summary);
-      idea = await llm.generateIdea(dna, seed, recentSummaries);
+      idea = await llm.generateIdea(dna, seed, recentSummaries, business);
       hash = normalizeHash(idea.summary);
       if (attempt === 2) return;
     }
@@ -170,7 +181,7 @@ export async function generateFromCampaign(id: string) {
       .select("id")
       .single();
 
-    const content = await llm.generateContent(dna, idea);
+    const content = await llm.generateContent(dna, idea, business);
     await supabase.from("posts").insert({
       account_id: campaign.account_id,
       user_id: user.id,
