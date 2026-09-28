@@ -4,18 +4,26 @@ import {
   businessDnaSchema,
   commentReviewSchema,
   sanitizeCommentReply,
+  researchExtractSchema,
+  businessSynthesisSchema,
   type GeneratedIdea,
   type GeneratedContentParsed,
   type BusinessDnaParsed,
   type CommentReviewParsed,
+  type ResearchExtractParsed,
+  type BusinessSynthesisParsed,
 } from "../schemas";
 import type { AccountDna, BusinessDna } from "../types";
 import {
   buildDnaSystemPrompt,
   buildIdeaUserPrompt,
   buildContentUserPrompt,
-  BUSINESS_ANALYST_SYSTEM_PROMPT,
-  buildBusinessDnaUserPrompt,
+  RESEARCH_EXTRACT_SYSTEM_PROMPT,
+  buildResearchExtractUserPrompt,
+  BUSINESS_SYNTHESIS_SYSTEM_PROMPT,
+  buildBusinessSynthesisUserPrompt,
+  BUSINESS_VERIFY_SYSTEM_PROMPT,
+  buildBusinessVerifyUserPrompt,
   buildCommentReviewSystemPrompt,
   buildCommentReviewUserPrompt,
   type CommentForReview,
@@ -40,10 +48,14 @@ export interface LLMProvider {
     business?: BusinessDna | null,
   ): Promise<GeneratedContentParsed>;
   /**
-   * Distill Instagram + website source text into a Business DNA. `deadline`
-   * (epoch ms) caps total time across retries — e.g. to answer before a proxy timeout.
+   * Business DNA deep research, step 1: evidence-backed facts from one source
+   * excerpt. `deadline` (epoch ms) caps total time across retries.
    */
-  analyzeBusiness(sources: string, opts?: { deadline?: number }): Promise<BusinessDnaParsed>;
+  extractResearchFacts(sourceLabel: string, excerpt: string, opts?: { deadline?: number }): Promise<ResearchExtractParsed>;
+  /** Step 2: write the Business DNA from the research dossier only (+ gaps). */
+  synthesizeBusinessDna(dossier: string, opts?: { deadline?: number }): Promise<BusinessSynthesisParsed>;
+  /** Step 3: fact-check a draft against the dossier; returns the corrected DNA. */
+  verifyBusinessDna(dossier: string, draft: BusinessDnaParsed, opts?: { deadline?: number }): Promise<BusinessDnaParsed>;
   /**
    * Review comments (Comments feature): a verdict per comment and a safe reply
    * draft for non-bad ones. Only ids that were asked about come back.
@@ -240,16 +252,52 @@ class DeepSeekProvider implements LLMProvider {
     return parsed;
   }
 
-  async analyzeBusiness(sources: string, opts: { deadline?: number } = {}): Promise<BusinessDnaParsed> {
+  async extractResearchFacts(
+    sourceLabel: string,
+    excerpt: string,
+    opts: { deadline?: number } = {},
+  ): Promise<ResearchExtractParsed> {
     return this.chatValidated(
       [
-        { role: "system", content: BUSINESS_ANALYST_SYSTEM_PROMPT },
-        { role: "user", content: buildBusinessDnaUserPrompt(sources) },
+        { role: "system", content: RESEARCH_EXTRACT_SYSTEM_PROMPT },
+        { role: "user", content: buildResearchExtractUserPrompt(sourceLabel, excerpt) },
       ],
-      0.3,
-      (raw) => businessDnaSchema.parse(raw),
+      0.1,
+      (raw) => researchExtractSchema.parse(raw),
       2,
       90_000,
+      opts.deadline,
+    );
+  }
+
+  async synthesizeBusinessDna(dossier: string, opts: { deadline?: number } = {}): Promise<BusinessSynthesisParsed> {
+    return this.chatValidated(
+      [
+        { role: "system", content: BUSINESS_SYNTHESIS_SYSTEM_PROMPT },
+        { role: "user", content: buildBusinessSynthesisUserPrompt(dossier) },
+      ],
+      0.3,
+      (raw) => businessSynthesisSchema.parse(raw),
+      2,
+      120_000,
+      opts.deadline,
+    );
+  }
+
+  async verifyBusinessDna(
+    dossier: string,
+    draft: BusinessDnaParsed,
+    opts: { deadline?: number } = {},
+  ): Promise<BusinessDnaParsed> {
+    return this.chatValidated(
+      [
+        { role: "system", content: BUSINESS_VERIFY_SYSTEM_PROMPT },
+        { role: "user", content: buildBusinessVerifyUserPrompt(dossier, JSON.stringify(draft, null, 1)) },
+      ],
+      0.1,
+      (raw) => businessDnaSchema.parse(raw),
+      2,
+      120_000,
       opts.deadline,
     );
   }

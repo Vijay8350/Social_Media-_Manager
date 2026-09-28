@@ -39,7 +39,7 @@ export default async function DashboardShell({
     : { count: 0 };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col md:flex-row">
       <Sidebar
         email={user.email ?? null}
         accounts={list}

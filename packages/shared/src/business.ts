@@ -136,6 +136,8 @@ export async function getActiveBusinessDna(
     .eq("account_id", accountId)
     .eq("user_id", userId)
     .eq("use_in_generation", true)
+    // A row exists as soon as research is queued; only use one that's been built.
+    .not("generated_at", "is", null)
     .maybeSingle();
   if (error) return null;
   return (data as BusinessDna | null) ?? null;

@@ -5,6 +5,7 @@ import { isInstagramConfigured } from "@/lib/instagram-config";
 import type { InstagramAccount, Post } from "@insta/shared";
 import { getDefaultAccountId, resolveDefaultAccount } from "@/lib/default-account";
 import { AccountDetails } from "@/components/AccountDetails";
+import { LocalTime } from "@/components/LocalTime";
 
 const ERROR_MESSAGES: Record<string, string> = {
   not_configured: "Instagram isn't configured yet — add FACEBOOK_APP_ID / FACEBOOK_APP_SECRET to your env.",
@@ -186,7 +187,7 @@ export default async function DashboardPage({
                   <div className="flex flex-col">
                     <span className="text-[13px] leading-snug">{p.headline ?? "Untitled post"} — {p.status}</span>
                     <span className="text-[11.5px] text-muted-foreground">
-                      {p.origin} · {new Date(p.created_at).toLocaleString()}
+                      {p.origin} · <LocalTime iso={p.created_at} />
                     </span>
                   </div>
                 </div>

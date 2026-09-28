@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { LocalTime } from "@/components/LocalTime";
 import type { Post, PromptLibraryItem } from "@insta/shared";
 import { generateNow, generatePostImage, publishNowAction } from "./actions";
 import { GenerateForm } from "./GenerateForm";
@@ -143,9 +144,12 @@ export default async function ContentPage({
                 {post.status === "published" ? (
                   <p className="mt-3 text-xs text-green-700">
                     Published{post.ig_media_id ? ` · media ${post.ig_media_id}` : ""}
-                    {post.published_at
-                      ? ` · ${new Date(post.published_at).toLocaleString()}`
-                      : ""}
+                    {post.published_at && (
+                      <>
+                        {" · "}
+                        <LocalTime iso={post.published_at} />
+                      </>
+                      )}
                   </p>
                 ) : (
                   post.status === "queued" &&
@@ -162,7 +166,7 @@ export default async function ContentPage({
                 )}
 
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {post.origin} · {new Date(post.created_at).toLocaleString()}
+                  {post.origin} · <LocalTime iso={post.created_at} />
                 </p>
               </li>
             ))}

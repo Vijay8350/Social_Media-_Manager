@@ -15,3 +15,6 @@ export const MIGRATION_0003_HINT =
 
 export const MIGRATION_0005_HINT =
   "Database update needed: run supabase/migrations/0005_comments.sql in the Supabase SQL editor.";
+
+export const MIGRATION_0006_HINT =
+  "Database update needed: run supabase/migrations/0006_business_research.sql in the Supabase SQL editor.";

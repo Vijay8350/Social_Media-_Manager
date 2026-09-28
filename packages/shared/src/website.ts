@@ -372,8 +372,17 @@ function describeNetworkError(cause: { code?: string; message?: string }): strin
   return cause.message || code || "network error";
 }
 
-/** GET an HTML page, re-validating every redirect hop against the public-host guard. */
-async function fetchHtml(start: string, timeoutMs: number): Promise<{ url: string; html: string }> {
+/**
+ * GET an HTML page (or, with kind "xml", a sitemap), re-validating every
+ * redirect hop against the public-host guard.
+ */
+async function fetchHtml(
+  start: string,
+  timeoutMs: number,
+  kind: "html" | "xml" = "html",
+): Promise<{ url: string; html: string }> {
+  const accept = kind === "xml" ? "application/xml,text/xml" : "text/html,application/xhtml+xml";
+  const typeOk = kind === "xml" ? /xml/i : /text\/html|application\/xhtml/i;
   let current = start;
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
     const url = await assertPublicUrl(current);
@@ -383,7 +392,7 @@ async function fetchHtml(start: string, timeoutMs: number): Promise<{ url: strin
       const res = await fetch(url, {
         redirect: "manual",
         signal: controller.signal,
-        headers: { "User-Agent": USER_AGENT, Accept: "text/html,application/xhtml+xml" },
+        headers: { "User-Agent": USER_AGENT, Accept: accept },
       });
       if (res.status >= 300 && res.status < 400) {
         const location = res.headers.get("location");
@@ -397,9 +406,9 @@ async function fetchHtml(start: string, timeoutMs: number): Promise<{ url: strin
         throw new Error(`${url.hostname} responded ${res.status}`);
       }
       const type = res.headers.get("content-type") ?? "";
-      if (!/text\/html|application\/xhtml/i.test(type)) {
+      if (!typeOk.test(type)) {
         await res.body?.cancel();
-        throw new Error(`${url.toString()} isn't an HTML page`);
+        throw new Error(`${url.toString()} isn't ${kind === "xml" ? "XML" : "an HTML page"}`);
       }
       return { url: url.toString(), html: await readCapped(res, MAX_BYTES) };
     } catch (err) {
@@ -422,24 +431,112 @@ const PRIORITY_PATHS = [
   /services?|solutions?|pricing|plans/i,
 ];
 
-/** Read the homepage plus up to (maxPages - 1) high-signal internal pages. */
+/**
+ * Deep research reads more of the site: [pattern, how many pages to take].
+ * Products get two picks (a collection and a product page tell different things).
+ */
+const DEEP_PATHS: Array<[RegExp, number]> = [
+  [/about|our-?story|who-?we-?are|company|founder|mission/i, 1],
+  [/products?|shop|collections?|catalog|store|menu/i, 2],
+  [/services?|solutions?|what-?we-?do/i, 1],
+  [/pricing|plans|packages|rates/i, 1],
+  [/faq|help|questions/i, 1],
+  [/reviews?|testimonials?|customers?|case-?stud/i, 1],
+  [/contact|locations?|visit|stores?-?locator/i, 1],
+  [/shipping|returns?|refund|policy|policies|warranty/i, 1],
+  [/blog|journal|news|stories|articles/i, 1],
+];
+
+/** Pages with nothing to learn about the business (cart, login, search…). */
+const UTILITY_PAGE =
+  /\/(cart|checkout|account|login|log-?in|sign-?in|register|sign-?up|search|wishlist|compare|auth|authentication|password)(\/|$)/i;
+
+/** True for a store/app utility page (cart, checkout, login…) — never worth reading. */
+export function isUtilityPage(url: string): boolean {
+  try {
+    return UTILITY_PAGE.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+/** Same-site page URLs from a sitemap (following one level of sitemap index). */
+async function sitemapUrls(origin: string, site: string, timeoutMs: number): Promise<string[]> {
+  const locs = (xml: string) =>
+    [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/gi)].map((m) => decodeEntities(m[1]!)).slice(0, 500);
+  const sameSite = (u: string) => {
+    try {
+      const url = new URL(u);
+      return /^https?:$/.test(url.protocol) && url.hostname.replace(/^www\./, "") === site && !SKIP_LINK.test(url.pathname);
+    } catch {
+      return false;
+    }
+  };
+  try {
+    const root = await fetchHtml(`${origin}/sitemap.xml`, timeoutMs, "xml");
+    let urls = locs(root.html);
+    if (/<sitemapindex/i.test(root.html) && urls[0]) {
+      // Prefer a pages/products child sitemap; one extra fetch at most.
+      const child = urls.find((u) => /page|product|collection/i.test(u)) ?? urls[0];
+      urls = sameSite(child) ? locs((await fetchHtml(child, timeoutMs, "xml")).html) : [];
+    }
+    return urls.filter(sameSite);
+  } catch {
+    return []; // no sitemap — that's fine
+  }
+}
+
+/**
+ * Read the homepage plus up to (maxPages - 1) high-signal internal pages.
+ * `deep` widens what's read (FAQ, pricing, reviews, policies, contact, blog…),
+ * falls back to the sitemap when the homepage has few links (JS-built sites),
+ * and fills remaining slots with top-level pages. Every fetch — including the
+ * sitemap and redirects — goes through the public-host guard.
+ */
 export async function crawlWebsite(
   input: string,
-  opts: { maxPages?: number; timeoutMs?: number } = {},
+  opts: { maxPages?: number; timeoutMs?: number; deep?: boolean } = {},
 ): Promise<WebsiteSnapshot> {
-  const maxPages = opts.maxPages ?? 3;
+  const maxPages = opts.maxPages ?? (opts.deep ? 10 : 3);
   const timeoutMs = opts.timeoutMs ?? 10_000;
 
   const home = await fetchHtml(normalizeWebsiteUrl(input), timeoutMs);
   const first = extractPage(home.html, home.url, 6000);
 
+  const homeUrl = new URL(home.url);
+  // Compare pages by host (sans www) + path, so "/?x" or "www." variants of a page count once.
+  const pageKey = (u: string) => {
+    const x = new URL(u);
+    return x.hostname.replace(/^www\./, "") + (x.pathname.replace(/\/+$/, "") || "/");
+  };
+  const homeKey = pageKey(home.url);
+  let candidates = first.links.filter((l) => pageKey(l) !== homeKey && !isUtilityPage(l));
+  if (opts.deep && candidates.length < 8) {
+    const site = homeUrl.hostname.replace(/^www\./, "");
+    const fromSitemap = await sitemapUrls(homeUrl.origin, site, timeoutMs);
+    candidates = [...new Set([...candidates, ...fromSitemap.filter((u) => pageKey(u) !== homeKey && !isUtilityPage(u))])];
+  }
+
   const picks: string[] = [];
-  for (const re of PRIORITY_PATHS) {
-    if (picks.length >= maxPages - 1) break;
-    const hit = first.links.find(
-      (l) => l !== home.url && !picks.includes(l) && re.test(new URL(l).pathname),
-    );
-    if (hit) picks.push(hit);
+  const room = () => picks.length < maxPages - 1;
+  const plan: Array<[RegExp, number]> = opts.deep ? DEEP_PATHS : PRIORITY_PATHS.map((re) => [re, 1]);
+  for (const [re, take] of plan) {
+    let taken = 0;
+    for (const l of candidates) {
+      if (!room() || taken >= take) break;
+      if (!picks.includes(l) && re.test(new URL(l).pathname)) {
+        picks.push(l);
+        taken++;
+      }
+    }
+  }
+  if (opts.deep) {
+    // Fill what's left with shallow pages (/x, /pages/x, /collections/x) — the main sections.
+    const depth = (l: string) => new URL(l).pathname.split("/").filter(Boolean).length;
+    for (const l of [...candidates].sort((a, b) => depth(a) - depth(b))) {
+      if (!room()) break;
+      if (!picks.includes(l) && depth(l) <= 2) picks.push(l);
+    }
   }
 
   const extra = await Promise.allSettled(
@@ -449,6 +546,13 @@ export async function crawlWebsite(
     }),
   );
 
-  const pages = [first, ...extra.flatMap((r) => (r.status === "fulfilled" ? [r.value] : []))];
+  // Drop links that redirected to a utility page (e.g. /account → login) or to a page we already have.
+  const seen = new Set([homeKey]);
+  const fetched = extra.flatMap((r) => {
+    if (r.status !== "fulfilled" || isUtilityPage(r.value.url) || seen.has(pageKey(r.value.url))) return [];
+    seen.add(pageKey(r.value.url));
+    return [r.value];
+  });
+  const pages = [first, ...fetched];
   return { url: home.url, pages: pages.map(({ links: _links, ...page }) => page) };
 }

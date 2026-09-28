@@ -209,6 +209,41 @@ export interface BusinessDna {
   sources: BusinessDnaSources;
   generated_at: string | null;
   updated_at: string;
+  // Deep research (migration 0006; absent before it's applied)
+  research_status?: ResearchStatus;
+  research_request?: { website_url?: string | null; include_instagram?: boolean; requested_at?: string };
+  research_progress?: ResearchEvent[];
+  research_notes?: ResearchDossier | null;
+  research_error?: string | null;
+  research_started_at?: string | null;
+}
+
+export type ResearchStatus = "idle" | "queued" | "researching" | "analyzing" | "done" | "error";
+
+/** One line of the research progress log. */
+export interface ResearchEvent {
+  at: string;
+  step: string;
+  detail?: string | null;
+  level?: "info" | "warn";
+}
+
+/** A fact found during research, with the quote that supports it. */
+export interface ResearchFact {
+  category: string;
+  fact: string;
+  evidence: string | null;
+  /** e.g. "instagram captions", "website: /about" */
+  source: string;
+}
+
+/** The research file a Business DNA is written from (stored as business_dna.research_notes). */
+export interface ResearchDossier {
+  facts: ResearchFact[];
+  voice_samples: string[];
+  customer_signals: string[];
+  gaps: string[];
+  stats: { captions: number; comments: number; pages: number; excerpts: number; facts: number; seconds: number };
 }
 
 /** Comments: how replies are sent for an account. */

@@ -130,3 +130,57 @@ export function sanitizeCommentReply(reply: string | null | undefined): string |
   if (!clean || clean.length > 300) return null;
   return clean;
 }
+
+// ---------------------------------------------------------------------------
+// Business DNA deep research
+// ---------------------------------------------------------------------------
+
+export const RESEARCH_FACT_CATEGORIES = [
+  "identity",
+  "offering",
+  "pricing",
+  "usp",
+  "audience",
+  "voice",
+  "values",
+  "social_proof",
+  "policy",
+  "location",
+  "contact",
+  "visual",
+  "other",
+] as const;
+
+const researchFactSchema = z.object({
+  category: z.preprocess(
+    (v) => (typeof v === "string" ? v.toLowerCase().trim().replace(/[\s-]+/g, "_") : "other"),
+    z.enum(RESEARCH_FACT_CATEGORIES).catch("other"),
+  ),
+  fact: z.preprocess(toText, z.string().trim().min(3).transform((s) => s.slice(0, 300))),
+  evidence: optText(200),
+});
+
+/**
+ * Research step 1 (per source excerpt): concrete facts, each with a verbatim
+ * evidence quote. Items are validated one by one — a malformed fact is dropped,
+ * not the whole excerpt.
+ */
+export const researchExtractSchema = z.object({
+  facts: z.preprocess(
+    (v) =>
+      (Array.isArray(v) ? v : []).flatMap((f) => {
+        const r = researchFactSchema.safeParse(f);
+        return r.success ? [r.data] : [];
+      }),
+    z
+      .array(z.object({ category: z.string(), fact: z.string(), evidence: z.string().nullable() }))
+      .transform((a) => a.slice(0, 60)),
+  ),
+  voice_samples: textList,
+  customer_signals: textList,
+});
+export type ResearchExtractParsed = z.infer<typeof researchExtractSchema>;
+
+/** Research step 2: the Business DNA written from the dossier, plus what couldn't be established. */
+export const businessSynthesisSchema = businessDnaSchema.extend({ gaps: textList });
+export type BusinessSynthesisParsed = z.infer<typeof businessSynthesisSchema>;

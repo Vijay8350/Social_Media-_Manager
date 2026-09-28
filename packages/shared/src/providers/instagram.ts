@@ -232,3 +232,95 @@ export async function setCommentHidden(commentId: string, token: string, hide: b
 export async function deleteComment(commentId: string, token: string): Promise<void> {
   await graphCall("DELETE", graphUrl(commentId, token));
 }
+
+// ---------------------------------------------------------------------------
+// Profile + media (instagram_basic) — used by the account pages and research
+// ---------------------------------------------------------------------------
+
+export interface InstagramProfile {
+  id: string;
+  username: string;
+  name: string | null;
+  biography: string | null;
+  website: string | null;
+  profilePictureUrl: string | null;
+  followers: number | null;
+  follows: number | null;
+  mediaCount: number | null;
+}
+
+/** Live profile details for a connected IG Business/Creator account. */
+export async function fetchInstagramProfile(igUserId: string, token: string): Promise<InstagramProfile> {
+  const d = await graphCall<{
+    id: string;
+    username: string;
+    name?: string;
+    biography?: string;
+    website?: string;
+    profile_picture_url?: string;
+    followers_count?: number;
+    follows_count?: number;
+    media_count?: number;
+  }>(
+    "GET",
+    graphUrl(igUserId, token, {
+      fields: "id,username,name,biography,website,profile_picture_url,followers_count,follows_count,media_count",
+    }),
+  );
+  return {
+    id: d.id,
+    username: d.username,
+    name: d.name ?? null,
+    biography: d.biography ?? null,
+    website: d.website ?? null,
+    profilePictureUrl: d.profile_picture_url ?? null,
+    followers: d.followers_count ?? null,
+    follows: d.follows_count ?? null,
+    mediaCount: d.media_count ?? null,
+  };
+}
+
+export interface InstagramMedia {
+  id: string;
+  caption: string | null;
+  mediaType: string;
+  /** Image URL (video thumbnail for videos/reels). */
+  imageUrl: string | null;
+  permalink: string | null;
+  timestamp: string;
+  likes: number | null;
+  comments: number | null;
+}
+
+/** The account's most recent media, newest first (max 100 per request). */
+export async function fetchInstagramMedia(igUserId: string, token: string, limit = 12): Promise<InstagramMedia[]> {
+  const d = await graphCall<{
+    data: Array<{
+      id: string;
+      caption?: string;
+      media_type: string;
+      media_url?: string;
+      thumbnail_url?: string;
+      permalink?: string;
+      timestamp: string;
+      like_count?: number;
+      comments_count?: number;
+    }>;
+  }>(
+    "GET",
+    graphUrl(`${igUserId}/media`, token, {
+      fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count",
+      limit: String(Math.min(limit, 100)),
+    }),
+  );
+  return d.data.map((m) => ({
+    id: m.id,
+    caption: m.caption ?? null,
+    mediaType: m.media_type,
+    imageUrl: (m.media_type === "VIDEO" ? m.thumbnail_url : m.media_url) ?? null,
+    permalink: m.permalink ?? null,
+    timestamp: m.timestamp,
+    likes: m.like_count ?? null,
+    comments: m.comments_count ?? null,
+  }));
+}

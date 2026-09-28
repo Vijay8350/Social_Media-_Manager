@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertPublicUrl, extractPage, isPublicAddress, normalizeWebsiteUrl } from "./website";
+import { assertPublicUrl, extractPage, isPublicAddress, isUtilityPage, normalizeWebsiteUrl } from "./website";
 
 describe("isPublicAddress", () => {
   it.each([
@@ -108,6 +108,15 @@ describe("extractPage", () => {
     );
     expect(page.text).toContain("Top");
     expect(page.text).toContain("Body text");
+  });
+
+  it("isUtilityPage flags cart/login/checkout-style pages only", () => {
+    for (const u of ["/cart", "/checkout/x", "/account", "/authentication/login", "/search?q=x", "/pages/sign-in"]) {
+      expect(isUtilityPage(`https://shop.test${u}`)).toBe(true);
+    }
+    for (const u of ["/", "/pages/about-us", "/collections/earrings", "/pages/faq", "/cartier-collection", "/policies/shipping-policy"]) {
+      expect(isUtilityPage(`https://shop.test${u}`)).toBe(false);
+    }
   });
 
   it("keeps content after an unclosed skipped tag", () => {

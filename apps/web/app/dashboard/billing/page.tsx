@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isBillingEnabled } from "@/lib/stripe";
+import { LocalTime } from "@/components/LocalTime";
 
 const ACTIVE = new Set(["active", "trialing"]);
 
@@ -59,7 +60,7 @@ export default async function BillingPage({
         </p>
         {sub?.current_period_end && (
           <p className="mt-1 text-xs text-muted-foreground">
-            Renews/ends {new Date(sub.current_period_end).toLocaleDateString()}
+            Renews/ends <LocalTime iso={sub.current_period_end} mode="date" />
           </p>
         )}
 

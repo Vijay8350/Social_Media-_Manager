@@ -2,25 +2,21 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getInstagramProfile, getRecentMedia } from "@/lib/instagram";
-import { isMissingSchema, MIGRATION_0003_HINT } from "@/lib/db-errors";
+import { isMissingSchema, MIGRATION_0003_HINT, MIGRATION_0006_HINT } from "@/lib/db-errors";
 import {
-  buildBusinessSourceText,
+  assertPublicUrl,
   businessToAccountDnaPatch,
-  crawlWebsite,
-  decryptSecret,
   getLLMProviderForUser,
   normalizeWebsiteUrl,
   type AccountDna,
   type BusinessDna,
-  type BusinessDnaSources,
-  type BusinessSourceInput,
-  type WebsiteSnapshot,
+  type ResearchEvent,
 } from "@insta/shared";
 
 export type BizState = { ok?: boolean; error?: string; message?: string; warnings?: string[] } | undefined;
 
-const CAPTIONS_TO_READ = 30;
+/** A run older than this that's still "running" was interrupted (matches the worker). */
+const STALE_MS = 15 * 60_000;
 
 const errMsg = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback);
 
@@ -42,17 +38,16 @@ function revalidate(accountId: string) {
 }
 
 /**
- * Build (or rebuild) the account's Business DNA: read the Instagram profile +
- * recent captions and the website, then have DeepSeek distill them. Either
- * source may fail on its own — we analyze whatever we could read.
+ * Start a deep-research run for the account's Business DNA. The worker does the
+ * research (Instagram + a deep website crawl → evidence-backed facts → DNA
+ * written from those facts → fact-check) and records progress on the row; the
+ * page shows it live. The current DNA stays until the new run succeeds.
  */
-export async function analyzeBusiness(
+export async function startBusinessResearch(
   accountId: string,
   _prev: BizState,
   formData: FormData,
 ): Promise<BizState> {
-  // Finish (with an error if need be) before nginx's 180 s proxy_read_timeout turns it into a 504.
-  const deadline = Date.now() + 150_000;
   const supabase = await createClient();
   const {
     data: { user },
@@ -61,104 +56,69 @@ export async function analyzeBusiness(
 
   const { data: account } = await supabase
     .from("instagram_accounts")
-    .select("id, ig_user_id, ig_username, encrypted_token")
+    .select("id, ig_user_id, encrypted_token")
     .eq("id", accountId)
     .eq("user_id", user.id)
     .maybeSingle();
   if (!account) return { error: "Account not found" };
 
-  let llm: Awaited<ReturnType<typeof getLLMProviderForUser>>;
+  // Fail fast on things the worker would only discover later.
   try {
-    llm = await getLLMProviderForUser(supabase, user.id);
+    await getLLMProviderForUser(supabase, user.id);
   } catch (err) {
     return { error: errMsg(err, "DeepSeek isn't configured") };
   }
-
-  const warnings: string[] = [];
-  const sources: BusinessDnaSources = {};
-
-  // 1) Instagram — profile + recent captions via the Graph API.
-  let instagram: BusinessSourceInput["instagram"] = null;
-  if (formData.get("include_instagram") === "on") {
-    if (account.ig_user_id && account.encrypted_token) {
-      try {
-        const token = decryptSecret(account.encrypted_token);
-        const [profile, media] = await Promise.all([
-          getInstagramProfile(account.ig_user_id, token),
-          getRecentMedia(account.ig_user_id, token, CAPTIONS_TO_READ).catch(() => []),
-        ]);
-        instagram = { ...profile, posts: media };
-        sources.instagram = {
-          username: profile.username,
-          posts_analyzed: media.filter((m) => m.caption).length,
-          followers: profile.followers,
-        };
-      } catch (err) {
-        const msg = errMsg(err, "request failed");
-        warnings.push(`Instagram: ${msg}`);
-        sources.instagram = { username: account.ig_username, posts_analyzed: 0, followers: null, error: msg };
-      }
-    } else {
-      warnings.push("Instagram: no stored token for this account — reconnect it to include Instagram.");
-    }
+  const includeInstagram = formData.get("include_instagram") === "on";
+  if (includeInstagram && !(account.ig_user_id && account.encrypted_token)) {
+    return { error: "This account has no Instagram login stored — reconnect it, or research the website only." };
   }
-
-  // 2) Website — the URL typed in, else the link in the Instagram bio.
-  const websiteInput = text(formData.get("website_url")) ?? instagram?.website ?? null;
-  let website: WebsiteSnapshot | null = null;
-  if (websiteInput) {
+  let websiteUrl: string | null = null;
+  const typed = text(formData.get("website_url"));
+  if (typed) {
     try {
-      website = await crawlWebsite(normalizeWebsiteUrl(websiteInput));
-      sources.website = { url: website.url, pages: website.pages.map((p) => p.url) };
-      const chars = website.pages.reduce((n, p) => n + p.text.length, 0);
-      if (chars < 300) {
-        warnings.push(
-          "Website: very little readable text (it may be built with JavaScript), so the result leans on Instagram.",
-        );
-      }
+      websiteUrl = (await assertPublicUrl(normalizeWebsiteUrl(typed))).toString();
     } catch (err) {
-      const msg = errMsg(err, "couldn't load the site");
-      warnings.push(`Website: ${msg}`);
-      sources.website = { url: normalizeWebsiteUrl(websiteInput), pages: [], error: msg };
+      return { error: `Website: ${errMsg(err, "invalid URL")}` };
     }
   }
-
-  if (!instagram && !website) {
-    return {
-      error: "Nothing to analyze — add a website URL or include Instagram.",
-      warnings,
-    };
+  if (!includeInstagram && !websiteUrl) {
+    return { error: "Add a website URL or include Instagram — there's nothing to research." };
   }
 
-  // 3) DeepSeek distills the sources into a Business DNA.
-  let dna;
-  try {
-    dna = await llm.analyzeBusiness(buildBusinessSourceText({ instagram, website }), { deadline });
-  } catch (err) {
-    return { error: `DeepSeek analysis failed: ${errMsg(err, "unknown error")}`, warnings };
+  const { data: current, error: readErr } = await supabase
+    .from("business_dna")
+    .select("research_status, research_started_at, updated_at")
+    .eq("account_id", accountId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (readErr) {
+    return { error: isMissingSchema(readErr) ? (/research_/.test(readErr.message) ? MIGRATION_0006_HINT : MIGRATION_0003_HINT) : readErr.message };
+  }
+  const since = current?.research_started_at ?? current?.updated_at;
+  const running = ["queued", "researching", "analyzing"].includes(current?.research_status ?? "");
+  if (running && since && Date.now() - new Date(since).getTime() < STALE_MS) {
+    return { error: "Research is already running for this account." };
   }
 
   const now = new Date().toISOString();
+  const log: ResearchEvent[] = [{ at: now, step: "Queued — waiting for the research worker" }];
   const { error } = await supabase.from("business_dna").upsert(
     {
       account_id: accountId,
       user_id: user.id,
-      ...dna,
-      website_url: website?.url ?? sources.website?.url ?? null,
-      sources,
-      generated_at: now,
+      research_status: "queued",
+      research_request: { website_url: websiteUrl, include_instagram: includeInstagram, requested_at: now },
+      research_progress: log,
+      research_error: null,
+      research_started_at: null,
       updated_at: now,
     },
     { onConflict: "account_id" },
   );
-  if (error) return { error: isMissingSchema(error) ? MIGRATION_0003_HINT : error.message, warnings };
+  if (error) return { error: isMissingSchema(error) ? MIGRATION_0006_HINT : error.message };
 
-  const used = [
-    instagram && `@${instagram.username} (${sources.instagram?.posts_analyzed ?? 0} captions)`,
-    website && `${new URL(website.url).hostname} (${website.pages.length} page${website.pages.length === 1 ? "" : "s"})`,
-  ].filter(Boolean);
   revalidate(accountId);
-  return { ok: true, message: `Business DNA built from ${used.join(" + ")}.`, warnings };
+  return { ok: true, message: "Deep research started — it takes 1–3 minutes. You can leave this page." };
 }
 
 /** Save manual edits to the Business DNA. */

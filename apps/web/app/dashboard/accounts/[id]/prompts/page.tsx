@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { LocalTime } from "@/components/LocalTime";
 import type { PromptLibraryItem } from "@insta/shared";
 import { addPrompt, togglePrompt, deletePrompt } from "./actions";
 
@@ -103,9 +104,12 @@ function PromptGroup({
                 <p className="mt-0.5 text-sm text-muted-foreground">{p.prompt_text}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   used {p.use_count}×
-                  {p.last_used_at
-                    ? ` · last ${new Date(p.last_used_at).toLocaleDateString()}`
-                    : ""}
+                  {p.last_used_at && (
+                    <>
+                      {" · last "}
+                      <LocalTime iso={p.last_used_at} mode="date" />
+                    </>
+                    )}
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">

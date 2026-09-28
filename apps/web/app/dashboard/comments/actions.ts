@@ -73,8 +73,9 @@ async function markError(supabase: Supabase, userId: string, id: string, error: 
     .eq("user_id", userId);
 }
 
+/** Refresh every view of comments: /dashboard/comments, each account's Comments tab, the sidebar badge. */
 function done() {
-  revalidatePath("/dashboard/comments");
+  revalidatePath("/dashboard", "layout");
 }
 
 /** Save an account's comment settings (creating the row switches monitoring on). */

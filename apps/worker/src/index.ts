@@ -7,11 +7,13 @@ import {
   schedulerQueue,
   analyticsQueue,
   commentsQueue,
+  researchQueue,
 } from "./queues.js";
 import { runDailyPipeline } from "./pipeline.js";
 import { scanAndEnqueue } from "./scheduler.js";
 import { pullAnalytics } from "./analytics.js";
 import { sweepComments } from "./comments.js";
+import { processResearchQueue } from "./research.js";
 
 /**
  * Worker entrypoint (M7 autopilot).
@@ -56,6 +58,16 @@ async function main() {
     { connection, prefix: QUEUE_PREFIX },
   );
 
+  // Business DNA deep research: one queued run at a time (takes 1–3 minutes).
+  const researchWorker = new Worker(
+    QUEUE_NAMES.research,
+    async () => {
+      const n = await processResearchQueue();
+      if (n > 0) console.log("[research] finished a Business DNA research run");
+    },
+    { connection, prefix: QUEUE_PREFIX },
+  );
+
   const analyticsWorker = new Worker(
     QUEUE_NAMES.analytics,
     async () => {
@@ -88,7 +100,13 @@ async function main() {
     {},
     { repeat: { every: 15 * 60_000 }, removeOnComplete: true, removeOnFail: 50 },
   );
-  console.log("[worker] scheduler (15m) + comments (15m) + analytics (6h) scheduled");
+  // Poll for queued Business DNA research every 15 seconds.
+  await researchQueue.add(
+    "poll",
+    {},
+    { repeat: { every: 15_000 }, removeOnComplete: true, removeOnFail: 50 },
+  );
+  console.log("[worker] scheduler (15m) + comments (15m) + research poll (15s) + analytics (6h) scheduled");
 
   const shutdown = async () => {
     console.log("[worker] shutting down…");
@@ -96,6 +114,7 @@ async function main() {
     await pipelineWorker.close();
     await analyticsWorker.close();
     await commentsWorker.close();
+    await researchWorker.close();
     process.exit(0);
   };
   process.on("SIGINT", shutdown);

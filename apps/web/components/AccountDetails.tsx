@@ -17,6 +17,7 @@ import {
   type TokenStatus,
 } from "@/lib/api-status";
 import { StatusDot } from "@/components/StatusDot";
+import { LocalTime } from "@/components/LocalTime";
 import { setDefaultAccount } from "@/app/dashboard/actions";
 
 const fmt = (n: number | null) => (n == null ? "—" : n.toLocaleString());
@@ -39,10 +40,14 @@ function CheckRow({ label, check }: { label: string; check: Check }) {
   return <Row label={label} value={<StatusDot state={check.state} label={text} />} sub={check.detail} />;
 }
 
-function expiryText(d: Date | null): string {
+function expiryText(d: Date | null): React.ReactNode {
   if (!d) return "Never";
   const days = Math.ceil((d.getTime() - Date.now()) / 864e5);
-  return `${d.toLocaleDateString()} (${days > 0 ? `${days} days left` : "expired"})`;
+  return (
+    <>
+      <LocalTime iso={d.toISOString()} mode="date" /> ({days > 0 ? `${days} days left` : "expired"})
+    </>
+  );
 }
 
 /**
@@ -228,7 +233,7 @@ export async function AccountDetails({
             )}
             <Row label="Instagram user ID" value={acct.ig_user_id ?? "—"} />
             <Row label="Facebook Page ID" value={acct.page_id ?? "—"} />
-            <Row label="Connected on" value={new Date(acct.created_at).toLocaleDateString()} />
+            <Row label="Connected on" value={<LocalTime iso={acct.created_at} mode="date" />} />
           </div>
           <div className="border-t border-border py-3">
             <div className="mb-2 text-xs font-semibold text-muted-foreground">Permissions granted</div>
@@ -318,7 +323,9 @@ export async function AccountDetails({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={m.imageUrl}
-                    alt={m.caption?.slice(0, 80) ?? "Instagram post"}
+                    // Slice by code point: slicing UTF-16 units can split an emoji, and the
+                    // lone surrogate hydrates differently from the server HTML (React #418).
+                    alt={m.caption ? Array.from(m.caption).slice(0, 80).join("") : "Instagram post"}
                     className="aspect-square w-full object-cover transition group-hover:opacity-90"
                   />
                 ) : (
@@ -330,7 +337,7 @@ export async function AccountDetails({
                   <span>
                     ♥ {fmt(m.likes)} · 💬 {fmt(m.comments)}
                   </span>
-                  <span>{new Date(m.timestamp).toLocaleDateString()}</span>
+                  <LocalTime iso={m.timestamp} mode="date" />
                 </div>
               </a>
             ))}

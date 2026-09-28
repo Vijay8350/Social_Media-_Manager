@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import type { BusinessDna } from "@insta/shared";
+import type { BusinessDna, ResearchDossier } from "@insta/shared";
 import type { BizState } from "./actions";
+import { LocalTime } from "@/components/LocalTime";
+import { ResearchLive } from "./ResearchLive";
 
 type BoundAction = (prev: BizState, formData: FormData) => Promise<BizState>;
 
@@ -43,13 +45,96 @@ function ListField({ name, label, value, rows = 3 }: { name: string; label: stri
   );
 }
 
+const CATEGORY_LABEL: Record<string, string> = {
+  identity: "Who they are",
+  offering: "Products & services",
+  pricing: "Pricing",
+  usp: "What makes them different",
+  audience: "Audience",
+  voice: "Voice",
+  values: "Values",
+  social_proof: "Proof (reviews, numbers, press)",
+  policy: "Policies",
+  location: "Location",
+  contact: "Contact",
+  visual: "Visual style",
+  other: "Other",
+};
+
+/** The research file the DNA was written from: facts + evidence, voice, customers, gaps. */
+function ResearchDossierView({ notes }: { notes: ResearchDossier }) {
+  const byCat = new Map<string, ResearchDossier["facts"]>();
+  for (const f of notes.facts) byCat.set(f.category, [...(byCat.get(f.category) ?? []), f]);
+  const s = notes.stats;
+  return (
+    <details className="rounded-lg border border-border px-4 py-3">
+      <summary className="cursor-pointer text-sm font-semibold">
+        Research file — {s.facts} facts from {s.excerpts} source excerpt{s.excerpts === 1 ? "" : "s"}
+        <span className="ml-2 font-normal text-muted-foreground">
+          ({s.captions} captions · {s.comments} customer comments · {s.pages} website pages · {s.seconds}s)
+        </span>
+      </summary>
+      <div className="mt-4 flex flex-col gap-4 text-[13px]">
+        {notes.gaps.length > 0 && (
+          <div className="rounded-md bg-amber-500/10 px-3 py-2 text-amber-800 dark:text-amber-300">
+            <div className="font-semibold">The research couldn&apos;t establish:</div>
+            <ul className="ml-4 list-disc">
+              {notes.gaps.map((g) => (
+                <li key={g}>{g}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {[...byCat].map(([cat, facts]) => (
+          <div key={cat}>
+            <div className="mb-1 font-semibold">{CATEGORY_LABEL[cat] ?? cat}</div>
+            <ul className="flex flex-col gap-1.5">
+              {facts.map((f, i) => (
+                <li key={i} className="border-l-2 border-border pl-3">
+                  {f.fact}
+                  <span className="block text-[12px] text-muted-foreground">
+                    {f.evidence ? <>&ldquo;{f.evidence}&rdquo; · </> : null}
+                    {f.source}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        {notes.voice_samples.length > 0 && (
+          <div>
+            <div className="mb-1 font-semibold">How the brand writes</div>
+            <ul className="ml-4 list-disc text-muted-foreground">
+              {notes.voice_samples.map((v) => (
+                <li key={v}>&ldquo;{v}&rdquo;</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {notes.customer_signals.length > 0 && (
+          <div>
+            <div className="mb-1 font-semibold">What customers say / ask</div>
+            <ul className="ml-4 list-disc text-muted-foreground">
+              {notes.customer_signals.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
+const RUNNING = ["queued", "researching", "analyzing"];
+
 export function BusinessDnaView({
   accountId,
   username,
   business,
   suggestedWebsite,
   llmReady,
-  analyzeAction,
+  researchAction,
   saveAction,
   applyAction,
 }: {
@@ -58,26 +143,31 @@ export function BusinessDnaView({
   business: BusinessDna | null;
   suggestedWebsite: string | null;
   llmReady: boolean;
-  analyzeAction: BoundAction;
+  researchAction: BoundAction;
   saveAction: BoundAction;
   applyAction: BoundAction;
 }) {
-  const [analyzeState, analyze, analyzing] = useActionState<BizState, FormData>(analyzeAction, undefined);
+  const [researchState, research, starting] = useActionState<BizState, FormData>(researchAction, undefined);
   const [saveState, save, saving] = useActionState<BizState, FormData>(saveAction, undefined);
   const [applyState, apply, applying] = useActionState<BizState, FormData>(applyAction, undefined);
   const b = business;
   const src = b?.sources;
+  const status = b?.research_status ?? "idle";
+  const running = RUNNING.includes(status);
+  const built = Boolean(b?.generated_at);
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Build from sources */}
+      {/* Deep research */}
       <section className="card flex flex-col gap-4 p-5">
         <div>
-          <h2 className="text-lg font-bold">Business DNA</h2>
+          <h2 className="text-lg font-bold">Business DNA · deep research</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            We read @{username}&rsquo;s bio and recent captions through the Instagram API, plus your
-            website&rsquo;s home, about and product pages. DeepSeek turns them into a business
-            profile you can edit — used when generating posts, or applied onto the Account DNA.
+            Research first, then write. We collect @{username}&rsquo;s profile, 50 recent captions and
+            what customers comment, and crawl your website in depth (about, products, pricing, FAQ,
+            reviews, policies, contact…). DeepSeek extracts concrete facts — each backed by a quote
+            from the source — writes the Business DNA only from that research, then fact-checks
+            every field. Takes 1–3 minutes and runs in the background.
           </p>
         </div>
 
@@ -91,7 +181,7 @@ export function BusinessDnaView({
           </p>
         )}
 
-        <form action={analyze} className="flex flex-col gap-3">
+        <form action={research} className="flex flex-col gap-3">
           <label className={labelCls}>
             Website
             <input
@@ -104,22 +194,41 @@ export function BusinessDnaView({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="include_instagram" defaultChecked />
-            Include @{username}&rsquo;s Instagram profile and recent captions
+            Include @{username}&rsquo;s Instagram profile, captions and customer comments
           </label>
           <div className="flex flex-wrap items-center gap-3">
-            <button type="submit" disabled={analyzing || !llmReady} className="btn-primary">
-              {analyzing ? "Analyzing… (up to a minute)" : b ? "↻ Re-analyze" : "✨ Build Business DNA"}
+            <button type="submit" disabled={starting || running || !llmReady} className="btn-primary">
+              {running ? "Researching…" : starting ? "Starting…" : built ? "↻ Research again" : "🔎 Start deep research"}
             </button>
-            {b && !analyzing && (
-              <span className="text-xs text-muted-foreground">Re-analyzing replaces the fields below.</span>
+            {built && !running && (
+              <span className="text-xs text-muted-foreground">
+                A new run replaces the fields below once it succeeds.
+              </span>
             )}
           </div>
-          <Status state={analyzeState} />
+          <Status state={researchState} />
         </form>
+
+        {running && (
+          <ResearchLive
+            status={status}
+            log={b?.research_progress ?? []}
+            since={b?.research_started_at ?? b?.research_request?.requested_at ?? null}
+          />
+        )}
+
+        {status === "error" && b?.research_error && (
+          <div className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-600">
+            The last research run failed: {b.research_error}
+            {built && " Your previous Business DNA is unchanged."}
+          </div>
+        )}
+
+        {!running && b?.research_notes && <ResearchDossierView notes={b.research_notes} />}
 
         {b?.generated_at && (
           <p className="border-t border-border pt-3 text-xs text-muted-foreground">
-            Last built {new Date(b.generated_at).toLocaleString()} from{" "}
+            Last built <LocalTime iso={b.generated_at} /> from{" "}
             {[
               src?.instagram &&
                 (src.instagram.error
@@ -137,7 +246,7 @@ export function BusinessDnaView({
         )}
       </section>
 
-      {b && (
+      {b && built && (
         <>
           {/* Edit */}
           <form key={b.updated_at} action={save} className="card flex flex-col gap-5 p-5">

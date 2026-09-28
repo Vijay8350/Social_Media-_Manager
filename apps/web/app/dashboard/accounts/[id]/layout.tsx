@@ -27,7 +27,7 @@ export default async function AccountLayout({
   const acct = account as InstagramAccount;
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
+    <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
       <div className="flex items-center justify-between">
         <div>
           <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline">
@@ -39,7 +39,7 @@ export default async function AccountLayout({
         </div>
       </div>
 
-      <nav className="mt-6 flex gap-4 border-b border-border text-sm">
+      <nav className="mt-6 flex gap-4 overflow-x-auto whitespace-nowrap border-b border-border text-sm">
         <Link
           href={`/dashboard/accounts/${id}`}
           className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
@@ -69,6 +69,12 @@ export default async function AccountLayout({
           className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
         >
           Content
+        </Link>
+        <Link
+          href={`/dashboard/accounts/${id}/comments`}
+          className="border-b-2 border-transparent pb-2 hover:border-muted-foreground"
+        >
+          Comments
         </Link>
         <Link
           href={`/dashboard/accounts/${id}/schedule`}

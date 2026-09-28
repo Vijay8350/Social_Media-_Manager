@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getInstagramProfile } from "@/lib/instagram";
 import { isMissingSchema, MIGRATION_0003_HINT } from "@/lib/db-errors";
 import { decryptSecret, llmKeySource, loadLlmSettings, type BusinessDna } from "@insta/shared";
-import { analyzeBusiness, applyToAccountDna, saveBusinessDna } from "./actions";
+import { applyToAccountDna, saveBusinessDna, startBusinessResearch } from "./actions";
 import { BusinessDnaView } from "./BusinessDnaView";
 
 export default async function BusinessDnaPage({
@@ -53,7 +53,7 @@ export default async function BusinessDnaPage({
       business={business}
       suggestedWebsite={suggestedWebsite}
       llmReady={llmKeySource(llmSettings) !== "none"}
-      analyzeAction={analyzeBusiness.bind(null, id)}
+      researchAction={startBusinessResearch.bind(null, id)}
       saveAction={saveBusinessDna.bind(null, id)}
       applyAction={applyToAccountDna.bind(null, id)}
     />
